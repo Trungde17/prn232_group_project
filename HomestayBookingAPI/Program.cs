@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using BusinessObjects.Homestays;
 using DataAccess;
 using HomestayBookingAPI.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using Repositories.HomeStayRepository;
 using Services;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
@@ -42,16 +44,30 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
+    // Thêm sự kiện để debug lỗi xác thực
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+            return Task.CompletedTask;
+        }
+    };
 });
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<HomestayDbContext>()
     .AddDefaultTokenProviders();
 // dki dich vu mail
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+builder.Services.AddScoped<FavoriteHomestayRepository>();
+builder.Services.AddScoped<IFavoriteHomestayService, FavoriteHomestayService>();
+
 //dki OData
 IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
+    builder.EntitySet<FavoriteHomestay>("FavoriteHomestays");
     return builder.GetEdmModel();
 }
 builder.Services.AddControllers().AddOData(opt =>
@@ -60,6 +76,8 @@ builder.Services.AddControllers().AddOData(opt =>
 
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
+
 var app = builder.Build();
 // Tạo scope để gọi dịch vụ DI
 //using (var scope = app.Services.CreateScope())
@@ -75,7 +93,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
