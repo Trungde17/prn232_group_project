@@ -42,7 +42,7 @@ namespace HomestayBookingAPI.Controllers
                 return Unauthorized("Email does not exist.");
             }
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
                 return Unauthorized("Password is incorrect.");
             }
@@ -136,6 +136,40 @@ namespace HomestayBookingAPI.Controllers
                 return Ok("Email confirmed successfully. You can now log in.");
             else
                 return BadRequest("Invalid or expired confirmation link.");
+        }
+
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                return Ok("If your email is registered and confirmed, a password reset link has been sent.");
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebUtility.UrlEncode(token);
+            var callbackUrl = $"{_config["App:ClientUrl"]}/reset-password?userId={user.Id}&token={encodedToken}";
+
+            await _emailSender.SendEmailAsync(user.Email, "Reset Password",
+                $"Reset your password by clicking this link: <a href='{callbackUrl}'>Reset Password</a>");
+
+            return Ok("If your email is registered and confirmed, a password reset link has been sent.");
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(dto.UserId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var decodedToken = WebUtility.UrlDecode(dto.Token);
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok("Password has been reset successfully.");
         }
     }
 }
