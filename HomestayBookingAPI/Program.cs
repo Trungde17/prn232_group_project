@@ -13,6 +13,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using Repositories;
+using Repositories.HomeStayRepository;
+using Repositories.RoomRepository;
 using Services;
 using Services.HomestayServices;
 using Services.RoomServices;
@@ -70,6 +72,11 @@ IEdmModel GetEdmModel()
 
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IGenericRepository<Room>, RoomRepository>();
+builder.Services.AddScoped<IGenericRepository<Homestay>, HomeStayRepository>();
+
+
+
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IHomestayService, HomestayService>();
 
