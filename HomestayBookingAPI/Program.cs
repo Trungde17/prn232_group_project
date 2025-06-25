@@ -1,5 +1,9 @@
 ﻿using BusinessObjects;
+using BusinessObjects.Bookings;
+using BusinessObjects.Homestays;
+using BusinessObjects.Rooms;
 using DataAccess;
+using HomestayBookingAPI;
 using HomestayBookingAPI.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -8,14 +12,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using Repositories;
 using Services;
+using Services.HomestayServices;
+using Services.RoomServices;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers().AddOData(opt =>
+    opt.AddRouteComponents("odata", GetEdmModel())
+        .Select().Filter().Expand().Count().OrderBy().SetMaxTop(100));// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 //Database
@@ -52,24 +60,32 @@ builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
+    builder.EntitySet<Room>("Rooms");
+    builder.EntitySet<Homestay>("Homestays");
+   
     return builder.GetEdmModel();
 }
-builder.Services.AddControllers().AddOData(opt =>
-    opt.AddRouteComponents("odata", GetEdmModel())
-        .Select().Filter().Expand().Count().OrderBy().SetMaxTop(100));
+
+
+
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IHomestayService, HomestayService>();
 
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 var app = builder.Build();
 // Tạo scope để gọi dịch vụ DI
-//using (var scope = app.Services.CreateScope())
-//{
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-//    await DbSeeder.SeedRolesAsync(roleManager);  //  Gọi hàm seed
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await DbSeeder.SeedRolesAsync(roleManager);  //  Gọi hàm seed
+}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }

@@ -9,18 +9,19 @@ namespace DataAccess
 {
     public class HomestayDbContext : IdentityDbContext<ApplicationUser>
     {
-        //public HomestayDbContext() { }
+        
         public HomestayDbContext(DbContextOptions<HomestayDbContext> options)
         : base(options)
         {
         }
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-        //        optionsBuilder.UseSqlServer("Server=(local);Database=BookingHomestayDb;Uid=sa; Pwd=12345; TrustServerCertificate=True;");
-        //    }
-        //}
+        public HomestayDbContext() { }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Server=(local);Database=BookingHomestayDb;Uid=sa; Pwd=123; TrustServerCertificate=True;");
+            }
+        }
         // DbSet cho các bảng chính
 
         public DbSet<Homestay> Homestays { get; set; }
