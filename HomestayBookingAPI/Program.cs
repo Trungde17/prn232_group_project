@@ -3,7 +3,6 @@ using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
 using BusinessObjects.Rooms;
 using DataAccess;
-using HomestayBookingAPI;
 using HomestayBookingAPI.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -64,7 +63,8 @@ IEdmModel GetEdmModel()
     var builder = new ODataConventionModelBuilder();
     builder.EntitySet<Room>("Rooms");
     builder.EntitySet<Homestay>("Homestays");
-   
+    builder.EntitySet<Booking>("Bookings");
+
     return builder.GetEdmModel();
 }
 
@@ -83,12 +83,12 @@ builder.Services.AddScoped<IHomestayService, HomestayService>();
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 var app = builder.Build();
-// Tạo scope để gọi dịch vụ DI
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await DbSeeder.SeedRolesAsync(roleManager);  //  Gọi hàm seed
-}
+//// Tạo scope để gọi dịch vụ DI
+//using (var scope = app.Services.CreateScope())
+//{
+//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+//    await DbSeeder.SeedRolesAsync(roleManager);  //  Gọi hàm seed
+//}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

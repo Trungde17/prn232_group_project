@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Bookings;
+﻿using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
 using DataAccess;
 using DTOs.HomestayDtos;
-using Microsoft.EntityFrameworkCore;
 using Repositories;
-using Repositories.HomeStayRepository;
 
 namespace Services.HomestayServices
 {
@@ -140,6 +133,11 @@ namespace Services.HomestayServices
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+        public async Task<bool> CheckValidHomestay(int id)
+        {
+            var homestay = await _homestayRepo.GetWithConditionAsync(h => h.HomestayId == id);
+            return homestay != null;
         }
     }
 

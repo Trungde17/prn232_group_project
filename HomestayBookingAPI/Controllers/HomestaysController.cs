@@ -1,17 +1,14 @@
-﻿using BusinessObjects.Homestays;
-using DTOs.HomestayDtos;
-using Microsoft.AspNetCore.Http;
+﻿using DTOs.HomestayDtos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
-using Repositories;
 using Services.HomestayServices;
 
 
 namespace HomestayBookingAPI.Controllers
 {
-    
+
     public class HomestaysController : ODataController
     {
         private readonly IHomestayService _homestayService;

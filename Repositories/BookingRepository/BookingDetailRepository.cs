@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Bookings;
+﻿using BusinessObjects.Bookings;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Repositories.BookingRepository
 {
@@ -45,6 +40,8 @@ namespace Repositories.BookingRepository
         {
             return await context.BookingDetails.Include(b => b.Room).Include(b => b.Booking).Where(predicate).ToListAsync();
         }
+
+
 
     }
 }
