@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
+﻿using Microsoft.AspNetCore.Mvc;
 using Services.RoomServices;
 
 namespace HomestayBookingAPI.Controllers
@@ -16,12 +14,12 @@ namespace HomestayBookingAPI.Controllers
             _roomService = roomService;
         }
 
-        
+
         [HttpGet]
         public async Task<IActionResult> Get()
         {
             var rooms = await _roomService.GetAllRoomsAsync();
-            return Ok(rooms.AsQueryable()); 
+            return Ok(rooms.AsQueryable());
         }
     }
 }

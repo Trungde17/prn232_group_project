@@ -106,7 +106,8 @@ namespace Services.BookingServices
                 throw new ArgumentException("Check-in date must be before check-out date.");
             }
 
-            var days = (checkOut - checkIn).TotalDays;
+            double totalDays = (checkOut - checkIn).TotalDays;
+            int days = (int)Math.Ceiling(totalDays);
             var rooms = await _roomRepo.FindAsync(r => roomIds.Contains(r.RoomId));
             decimal totalAmount = 0;
 

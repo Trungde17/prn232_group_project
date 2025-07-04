@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
-using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Services.BookingServices;
 using Services.HomestayServices;
 using Services.RoomServices;
@@ -13,7 +12,9 @@ using System.Security.Claims;
 namespace HomestayBookingAPI.Controllers
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class BookingController : ODataController
+    [Route("api/[controller]")]
+    [ApiController]
+    public class BookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
         private readonly IHomestayService _homestayService;
@@ -72,7 +73,7 @@ namespace HomestayBookingAPI.Controllers
                     return BadRequest($"The following RoomIds are unavailable for the selected dates: {string.Join(", ", unavailableRoomIds)}.");
 
                 var booking = _mapper.Map<Booking>(dto);
-                booking.CustomerId = userId;
+                booking.CustomerId = "71184f16-d47d-4aae-9bf3-f94d49ea91f8";
                 booking.TotalAmount = await _bookingService.CalculateTotalAmountAsync(dto.RoomIds, dto.DateCheckIn, dto.DateCheckOut);
                 var result = await _bookingService.CreateBookingAsync(booking, dto.RoomIds);
                 if (result == null)

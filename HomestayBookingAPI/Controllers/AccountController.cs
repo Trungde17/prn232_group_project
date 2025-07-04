@@ -42,7 +42,7 @@ namespace HomestayBookingAPI.Controllers
                 return Unauthorized("Email does not exist.");
             }
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
                 return Unauthorized("Password is incorrect.");
             }

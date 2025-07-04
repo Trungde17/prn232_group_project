@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Homestays;
-using BusinessObjects.Rooms;
+﻿using BusinessObjects.Rooms;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Repositories.RoomRepository
 {
@@ -48,7 +42,7 @@ namespace Repositories.RoomRepository
                 throw new Exception($"An error occurred while retrieving the booking with ID: {id}", ex);
             }
         }
-        public virtual async Task<IEnumerable<Room>> FindAsync(Expression<Func<Room, bool>> predicate)
+        public override async Task<IEnumerable<Room>> FindAsync(Expression<Func<Room, bool>> predicate)
         {
             return await context.Rooms
                     .Include(h => h.Homestay)
@@ -57,7 +51,7 @@ namespace Repositories.RoomRepository
                     .Include(b => b.RoomAmenities)
                     .Include(b => b.RoomSchedules)
                     .Include(b => b.BookingDetails).Where(predicate).ToListAsync();
-            }
+        }
 
         public virtual async Task<Room> GetWithConditionAsync(Expression<Func<Room, bool>> predicate)
         {
