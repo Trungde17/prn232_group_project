@@ -1,33 +1,48 @@
-﻿using BusinessObjects.Bookings;
+﻿using BusinessObjects;
+using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
 using DataAccess;
 using DTOs.HomestayDtos;
+using Microsoft.AspNetCore.Identity;
 using Repositories;
 
 namespace Services.HomestayServices
 {
     public class HomestayService : IHomestayService
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IGenericRepository<Homestay> _homestayRepo;
         private readonly IGenericRepository<HomestayAmenity> _amenityRepo;
         private readonly IGenericRepository<HomestayPolicy> _policyRepo;
         private readonly IGenericRepository<HomestayNeighbourhood> _neighbourhoodRepo;
+        private readonly IGenericRepository<HomestayType> _homestayTypeRepo;
         private readonly IGenericRepository<HomestayImage> _imageRepo;
+        private readonly IGenericRepository<Ward> _wardRepo;
         private readonly HomestayDbContext _context;
 
         public HomestayService(
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IGenericRepository<Homestay> homestayRepo,
             IGenericRepository<HomestayAmenity> amenityRepo,
             IGenericRepository<HomestayPolicy> policyRepo,
             IGenericRepository<HomestayNeighbourhood> neighbourhoodRepo,
+            IGenericRepository<HomestayType> homestayTypeRepo,
             IGenericRepository<HomestayImage> imageRepo,
+            IGenericRepository<Ward> wardRepo,
+
             HomestayDbContext context)
         {
+            _userManager = userManager;
+            _roleManager = roleManager;
             _homestayRepo = homestayRepo;
             _amenityRepo = amenityRepo;
             _policyRepo = policyRepo;
             _neighbourhoodRepo = neighbourhoodRepo;
+            _homestayTypeRepo = homestayTypeRepo;
             _imageRepo = imageRepo;
+            _wardRepo = wardRepo;
             _context = context;
         }
         public async Task<IEnumerable<Homestay>> GetAllHomestaysAsync()
@@ -138,6 +153,36 @@ namespace Services.HomestayServices
         {
             var homestay = await _homestayRepo.GetWithConditionAsync(h => h.HomestayId == id);
             return homestay != null;
+        }
+
+        public async Task<Homestay> CreateHomestayAsync(Homestay homestay)
+        {
+            if (homestay == null)
+            {
+                throw new ArgumentNullException(nameof(homestay), "Homestay cannot be null.");
+            }
+            var owner = await _userManager.FindByIdAsync(homestay.OwnerId);
+            if (owner == null)
+            {
+                throw new ArgumentException($"Owner with ID {homestay.OwnerId} does not exist.", nameof(homestay.OwnerId));
+            }
+            if (!await _userManager.IsInRoleAsync(owner, "Owner"))
+            {
+                throw new ArgumentException($"User with ID {homestay.OwnerId} is not authorized to create a homestay. Must have 'Owner' role.", nameof(homestay.OwnerId));
+            }
+            var homestayType = await _homestayTypeRepo.GetAsync(homestay.HomestayTypeId);
+            if (homestayType == null)
+            {
+                throw new ArgumentException($"HomestayType with ID {homestay.HomestayTypeId} does not exist.", nameof(homestay.HomestayTypeId));
+            }
+            var ward = await _wardRepo.GetAsync(homestay.WardId);
+            if (ward == null)
+            {
+                throw new ArgumentException($"Ward with ID {homestay.WardId} does not exist.", nameof(homestay.WardId));
+            }
+
+            _homestayRepo.AddAsync(homestay);
+            return homestay;
         }
     }
 

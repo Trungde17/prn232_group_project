@@ -11,5 +11,6 @@ namespace Services.HomestayServices
         Task<List<Booking>> GetBookingList(int homeStayId);
         Task<Homestay> UpdateHomestayAsync(int id, HomestayUpdateDto dto);
         Task<bool> CheckValidHomestay(int id);
+        Task<Homestay> CreateHomestayAsync(Homestay homestay);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using BusinessObjects.Bookings;
+using BusinessObjects.Homestays;
 using DTOs.Bookings;
+using DTOs.HomestayDtos;
 
 namespace HomestayBookingAPI.Helpers
 {
@@ -15,6 +17,15 @@ namespace HomestayBookingAPI.Helpers
             .ForMember(dest => dest.BookingDetails, opt => opt.Ignore())
             .ForMember(dest => dest.Customer, opt => opt.Ignore())
             .ForMember(dest => dest.Homestay, opt => opt.Ignore());
+
+            CreateMap<CreateHomestayDTO, Homestay>()
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.HomestayType, opt => opt.Ignore())
+            .ForMember(dest => dest.Ward, opt => opt.Ignore())
+            .ForMember(dest => dest.Owner, opt => opt.Ignore());
+
+
         }
     }
 }

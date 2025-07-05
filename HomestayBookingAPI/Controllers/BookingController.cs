@@ -39,7 +39,7 @@ namespace HomestayBookingAPI.Controllers
                     return Unauthorized("User ID not found in token.");
                 }
 
-                var bookings = await _bookingService.GetAsync(userId);
+                var bookings = await _bookingService.GetMyBookingAsync(userId);
                 return Ok(bookings ?? new List<Booking>());
             }
             catch (Exception)

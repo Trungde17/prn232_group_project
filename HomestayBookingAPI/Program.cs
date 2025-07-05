@@ -74,6 +74,7 @@ builder.Services.AddScoped<IGenericRepository<HomestayAmenity>, HomestayAmenityR
 builder.Services.AddScoped<IGenericRepository<HomestayPolicy>, HomestayPolicyRepository>();
 builder.Services.AddScoped<IGenericRepository<HomestayNeighbourhood>, HomestayNeighbourhoodRepository>();
 builder.Services.AddScoped<IGenericRepository<HomestayImage>, HomestayImageRepository>();
+builder.Services.AddScoped<IGenericRepository<HomestayType>, HomestayTypeRepository>();
 
 builder.Services.AddScoped<IHomestayService, HomestayService>();
 //room service
@@ -88,6 +89,8 @@ builder.Services.AddScoped<IGenericRepository<Booking>, BookingRepository>();
 builder.Services.AddScoped<IGenericRepository<BookingDetail>, BookingDetailRepository>();
 
 builder.Services.AddScoped<IBookingService, BookingService>();
+
+builder.Services.AddScoped<IGenericRepository<Ward>, WardRepository>();
 
 
 

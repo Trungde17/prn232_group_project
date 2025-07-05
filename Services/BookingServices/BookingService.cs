@@ -56,7 +56,7 @@ namespace Services.BookingServices
             }
         }
 
-        public async Task<List<Booking>> GetAsync(string userId)
+        public async Task<List<Booking>> GetMyBookingAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
             {
@@ -67,6 +67,8 @@ namespace Services.BookingServices
                 .Where(b => b.CustomerId == userId)
                 .ToList();
         }
+
+
         public async Task<List<int>> CheckRoomAvailabilityAsync(List<int> roomIds, DateTime checkIn, DateTime checkOut)
         {
             if (roomIds == null || !roomIds.Any() || checkIn >= checkOut)
@@ -118,6 +120,12 @@ namespace Services.BookingServices
             }
 
             return totalAmount;
+        }
+
+        public async Task<Booking> GetBookingByIdAsync(int bookingId)
+        {
+            var booking = await _bookingRepo.GetAsync(bookingId);
+            return booking;
         }
     }
 }
