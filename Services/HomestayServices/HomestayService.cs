@@ -55,6 +55,14 @@ namespace Services.HomestayServices
         {
             return await _homestayRepo.GetAsync(id);
         }
+
+        public async Task<IEnumerable<Homestay>> GetHomestayByUserIdAsync(string userId)
+        {
+            // Lấy danh sách homestay mà OwnerId bằng userId
+            var homestays = await _homestayRepo.FindAsync(h => h.OwnerId.Equals(userId));
+            return homestays;
+        }
+
         public async Task<Homestay> UpdateHomestayAsync(int id, HomestayUpdateDto dto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();

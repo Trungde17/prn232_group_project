@@ -1,5 +1,9 @@
-﻿using BusinessObjects.Homestays;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using BusinessObjects.Homestays;
 using DTOs.HomestayDtos;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
@@ -11,7 +15,7 @@ using Services.HomestayServices;
 
 namespace HomestayBookingAPI.Controllers
 {
-    
+   
     public class HomestaysController : ODataController
     {
         private readonly IHomestayService _homestayService;
@@ -43,16 +47,35 @@ namespace HomestayBookingAPI.Controllers
             return Ok(homestay);
         }
 
-        [HttpGet("{key}/bookings")]
 
+        [EnableQuery]
+        [HttpGet("({key})/bookings")]
         public async Task<IActionResult> GetListBooking([FromODataUri] int key)
         {
-            var homestayBooking = await _homestayService.GetHomestayByIdAsync(key);
+            var homestayBooking = await _homestayService.GetBookingList(key);
             if (homestayBooking == null)
                 return NotFound();
 
             return Ok(homestayBooking);
         }
+
+
+
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [EnableQuery]
+        [HttpGet] // Absolute route
+        public async Task<IActionResult> MyHomestays()
+        {
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = "59dcaa38-8f31-4bed-b2db-81d383b933cd";
+            if (userIdClaim == null)
+                return StatusCode(500, "Cannot retrieve user ID");
+
+            //var homestays = await _homestayService.GetHomestayByUserIdAsync(userIdClaim.Value);
+            var homestays = await _homestayService.GetHomestayByUserIdAsync(userIdClaim);
+            return Ok(homestays);
+        }
+
         // PUT: odata/Homestays(5)
         [HttpPut("({key})")]
         public async Task<IActionResult> Put([FromRoute] int key, [FromBody] HomestayUpdateDto dto)

@@ -120,80 +120,145 @@ namespace Services.RoomServices
                     return null;
                 }
 
-                
+                // Update Room
                 room.Name = dto.Name;
                 room.Description = dto.Description;
                 room.ImgUrl = dto.ImgUrl;
                 room.Capacity = dto.Capacity;
                 room.Size = dto.Size;
-
                 await _roomRepo.UpdateAsync(room);
 
-         
-                var oldBeds = await _roomBedRepo.FindAsync(rb => rb.RoomId == id);
-                if (oldBeds != null && oldBeds.Any())
-                    await _roomBedRepo.DeleteRangeAsync(oldBeds);
+                #region RoomBeds
 
-                if (dto.RoomBeds?.Any() == true)
+                var oldBeds = (await _roomBedRepo.FindAsync(rb => rb.RoomId == id)).ToList();
+                var dtoBeds = dto.RoomBeds ?? new List<RoomBedDto>();
+
+                // XÓA beds không còn
+                var dtoBedTypeIds = dtoBeds.Select(b => b.BedTypeId).ToList();
+                var bedsToDelete = oldBeds.Where(ob => !dtoBedTypeIds.Contains(ob.BedTypeId)).ToList();
+                if (bedsToDelete.Any())
+                    await _roomBedRepo.DeleteRangeAsync(bedsToDelete);
+
+                // ADD or UPDATE
+                foreach (var bedDto in dtoBeds)
                 {
-                    var newBeds = dto.RoomBeds.Select(b => new RoomBed
+                    var existingBed = oldBeds.FirstOrDefault(x => x.BedTypeId == bedDto.BedTypeId);
+                    if (existingBed != null)
                     {
-                        RoomId = id,
-                        BedTypeId = b.BedTypeId,
-                        Quantity = b.Quantity
-                    });
-                    await _roomBedRepo.AddRangeAsync(newBeds);
+                        existingBed.Quantity = bedDto.Quantity;
+                        await _roomBedRepo.UpdateAsync(existingBed);
+                    }
+                    else
+                    {
+                        var newBed = new RoomBed
+                        {
+                            RoomId = id,
+                            BedTypeId = bedDto.BedTypeId,
+                            Quantity = bedDto.Quantity
+                        };
+                        await _roomBedRepo.AddAsync(newBed);
+                    }
                 }
 
-                
-                var oldPrices = await _roomPriceRepo.FindAsync(rb => rb.RoomId == id);
-                if (oldPrices != null && oldPrices.Any())
-                    await _roomPriceRepo.DeleteRangeAsync(oldPrices);
+                #endregion
 
-                if (dto.RoomPrices?.Any() == true)
+                #region RoomPrices
+
+                var oldPrices = (await _roomPriceRepo.FindAsync(rp => rp.RoomId == id)).ToList();
+                var dtoPrices = dto.RoomPrices ?? new List<RoomPriceDto>();
+
+                var dtoPriceTypeIds = dtoPrices.Select(p => p.PriceTypeId).ToList();
+                var pricesToDelete = oldPrices.Where(op => !dtoPriceTypeIds.Contains(op.PriceTypeId)).ToList();
+                if (pricesToDelete.Any())
+                    await _roomPriceRepo.DeleteRangeAsync(pricesToDelete);
+
+                foreach (var priceDto in dtoPrices)
                 {
-                    var newPrices = dto.RoomPrices.Select(p => new RoomPrice
+                    var existingPrice = oldPrices.FirstOrDefault(x => x.PriceTypeId == priceDto.PriceTypeId);
+                    if (existingPrice != null)
                     {
-                        RoomId = id,
-                        PriceTypeId = p.PriceTypeId,
-                        AmountPerNight = p.AmountPerNight
-                    });
-                    await _roomPriceRepo.AddRangeAsync(newPrices);
+                        existingPrice.AmountPerNight = priceDto.AmountPerNight;
+                        await _roomPriceRepo.UpdateAsync(existingPrice);
+                    }
+                    else
+                    {
+                        var newPrice = new RoomPrice
+                        {
+                            RoomId = id,
+                            PriceTypeId = priceDto.PriceTypeId,
+                            AmountPerNight = priceDto.AmountPerNight
+                        };
+                        await _roomPriceRepo.AddAsync(newPrice);
+                    }
                 }
 
-                
-                var oldAmenities = await _roomAmenityRepo.FindAsync(rb => rb.RoomId == id);
-                if (oldAmenities != null && oldAmenities.Any())
-                    await _roomAmenityRepo.DeleteRangeAsync(oldAmenities);
+                #endregion
 
-                if (dto.RoomAmenities?.Any() == true)
+                #region RoomAmenities
+
+                var oldAmenities = (await _roomAmenityRepo.FindAsync(ra => ra.RoomId == id)).ToList();
+                var dtoAmenities = dto.RoomAmenities ?? new List<RoomAmenityDto>();
+
+                var dtoAmenityIds = dtoAmenities.Select(a => a.AmenityId).ToList();
+                var amenitiesToDelete = oldAmenities.Where(oa => !dtoAmenityIds.Contains(oa.AmenityId)).ToList();
+                if (amenitiesToDelete.Any())
+                    await _roomAmenityRepo.DeleteRangeAsync(amenitiesToDelete);
+
+                foreach (var amenityDto in dtoAmenities)
                 {
-                    var newAmenities = dto.RoomAmenities.Select(a => new RoomAmenity
+                    var existingAmenity = oldAmenities.FirstOrDefault(x => x.AmenityId == amenityDto.AmenityId);
+                    if (existingAmenity == null)
                     {
-                        RoomId = id,
-                        AmenityId = a.AmenityId
-                    });
-                    await _roomAmenityRepo.AddRangeAsync(newAmenities);
+                        var newAmenity = new RoomAmenity
+                        {
+                            RoomId = id,
+                            AmenityId = amenityDto.AmenityId
+                        };
+                        await _roomAmenityRepo.AddAsync(newAmenity);
+                    }
                 }
 
-                
-                var oldSchedules = await _roomScheduleRepo.FindAsync(rb => rb.RoomId == id);
-                if (oldSchedules != null && oldSchedules.Any())
-                    await _roomScheduleRepo.DeleteRangeAsync(oldSchedules);
+                #endregion
 
-                if (dto.RoomSchedules?.Any() == true)
+                #region RoomSchedules
+
+                var oldSchedules = (await _roomScheduleRepo.FindAsync(rs => rs.RoomId == id)).ToList();
+                var dtoSchedules = dto.RoomSchedules ?? new List<RoomScheduleDto>();
+
+                // XÓA schedules không còn
+                var schedulesToDelete = oldSchedules
+                    .Where(os => !dtoSchedules.Any(ds =>
+                        ds.StartDate == os.StartDate &&
+                        ds.EndDate == os.EndDate &&
+                        ds.ScheduleType == os.ScheduleType))
+                    .ToList();
+
+                if (schedulesToDelete.Any())
+                    await _roomScheduleRepo.DeleteRangeAsync(schedulesToDelete);
+
+                // ADD mới
+                foreach (var scheduleDto in dtoSchedules)
                 {
-                    var newSchedules = dto.RoomSchedules.Select(s => new RoomSchedule
+                    var existingSchedule = oldSchedules.FirstOrDefault(os =>
+                        os.StartDate == scheduleDto.StartDate &&
+                        os.EndDate == scheduleDto.EndDate &&
+                        os.ScheduleType == scheduleDto.ScheduleType);
+
+                    if (existingSchedule == null)
                     {
-                        RoomId = id,
-                        StartDate = s.StartDate,
-                        EndDate = s.EndDate,
-                        ScheduleType = s.ScheduleType
-                    });
-                    await _roomScheduleRepo.AddRangeAsync(newSchedules);
+                        var newSchedule = new RoomSchedule
+                        {
+                            RoomId = id,
+                            StartDate = scheduleDto.StartDate,
+                            EndDate = scheduleDto.EndDate,
+                            ScheduleType = scheduleDto.ScheduleType
+                        };
+                        await _roomScheduleRepo.AddAsync(newSchedule);
+                    }
                 }
 
-                
+                #endregion
+
                 await transaction.CommitAsync();
 
                 return room;

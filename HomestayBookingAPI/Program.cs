@@ -9,9 +9,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+
+using Microsoft.AspNetCore.OData.Edm;
 using Repositories;
 using Repositories.HomeStayRepository;
 using Repositories.RoomRepository;
@@ -19,13 +22,25 @@ using Services;
 using Services.HomestayServices;
 using Services.RoomServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers().AddOData(opt =>
-    opt.AddRouteComponents("odata", GetEdmModel())
-        .Select().Filter().Expand().Count().OrderBy().SetMaxTop(100));// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers(options =>
+{
+    // Có thể thêm các cấu hình MVC khác ở đây nếu cần
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+})
+.AddOData(opt => // Thêm .AddOData vào cùng chuỗi
+{
+    opt.AddRouteComponents("odata", GetEdmModel());
+    opt.Select().Filter().Expand().Count().OrderBy().SetMaxTop(100);
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 //Database
@@ -53,6 +68,8 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 });
+
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<HomestayDbContext>()
     .AddDefaultTokenProviders();
@@ -61,24 +78,65 @@ builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 //dki OData
 IEdmModel GetEdmModel()
 {
-    var builder = new ODataConventionModelBuilder();
+    ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+
     builder.EntitySet<Room>("Rooms");
-    builder.EntitySet<Homestay>("Homestays");
-   
+    builder.EntitySet<Amenity>("Amenity");
+    builder.EntitySet<PriceType>("PriceType");
+    builder.EntitySet<BedType>("BedType");
+
+    // --- ĐÂY LÀ PHẦN SỬ DỤNG CÚ PHÁP ODATA V7 ĐỂ ĐỊNH NGHĨA FUNCTION ---
+    // Để định nghĩa một function/action trên collection trong OData v7:
+    // 1. Lấy EntityType của đối tượng (không phải EntitySet)
+    var homestayEntityType = builder.EntityType<Homestay>();
+
+    // 2. Gọi .Collection.Function() hoặc .Collection.Action() trên EntityType
+    homestayEntityType.Collection.Function("GetListBooking")
+        .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
+    homestayEntityType.Collection.Function("MyHomestays")
+        .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
+    // --- KẾT THÚC PHẦN CẦN THAY ĐỔI ---
+
     return builder.GetEdmModel();
 }
-
 
 
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IGenericRepository<Room>, RoomRepository>();
 builder.Services.AddScoped<IGenericRepository<Homestay>, HomeStayRepository>();
+builder.Services.AddScoped<IGenericRepository<Amenity>, AmenityRepository>();
 
+
+builder.Services.AddScoped<IGenericRepository<PriceType>, PriceTypeRepository>();
+
+builder.Services.AddScoped<IGenericRepository<BedType>, BedTypeRepository>();
+
+
+builder.Services.AddScoped<IBedTypeService, BedTypeService>();
+
+builder.Services.AddScoped<IPriceTypeService, PriceTypeService>();
+builder.Services.AddScoped<IAmenityService, AmenityService>();
 
 
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IHomestayService, HomestayService>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000);
+    options.ListenAnyIP(7220, listenOptions =>
+    {
+        listenOptions.UseHttps(); // nếu dùng HTTPS
+    });
+});
 
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
@@ -96,12 +154,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
-
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

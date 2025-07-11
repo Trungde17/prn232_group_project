@@ -25,6 +25,7 @@ namespace Repositories.HomeStayRepository
                 .Include(b => b.HomestayAmenities)
                 .Include(b => b.HomestayPolicies)
                 .Include(b => b.HomestayNeighbourhoods)
+                .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                 .Include(b => b.Rooms)
                 .ToListAsync();
         }
@@ -41,6 +42,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.HomestayPolicies)
                     .Include(b => b.HomestayNeighbourhoods)
                     .Include(b => b.Rooms)
+                    .Include(b=>b.Bookings).ThenInclude(b=>b.BookingDetails)
                     .FirstOrDefaultAsync(b => b.HomestayId == Id);
             }
             catch (Exception ex)
@@ -56,6 +58,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.HomestayAmenities)
                     .Include(b => b.HomestayPolicies)
                     .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .Include(b => b.Rooms).Where(predicate).ToListAsync();
         }
 
@@ -67,6 +70,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.HomestayAmenities)
                     .Include(b => b.HomestayPolicies)
                     .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .Include(b => b.Rooms).FirstOrDefaultAsync(predicate);
         }
 

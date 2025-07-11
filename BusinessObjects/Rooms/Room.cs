@@ -24,7 +24,7 @@ namespace BusinessObjects.Rooms
         public ICollection<RoomBed> RoomBeds { get; set; } = new List<RoomBed>();
         public ICollection<RoomPrice> RoomPrices { get; set; } = new List<RoomPrice>();
         public ICollection<RoomAmenity> RoomAmenities { get; set; } = new List<RoomAmenity>();
-        public ICollection<RoomSchedule> RoomSchedules { get; set; }
+        public ICollection<RoomSchedule> RoomSchedules { get; set; } =  new List<RoomSchedule>();
         public ICollection<BookingDetail> BookingDetails { get; set; }
     }
 }
