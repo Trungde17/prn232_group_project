@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Rooms;
+﻿using BusinessObjects.Rooms;
 using DataAccess;
 using DTOs.RoomDtos;
-using Microsoft.EntityFrameworkCore;
 using Repositories;
+using System.Linq.Expressions;
 
 namespace Services.RoomServices
 {
@@ -120,15 +115,14 @@ namespace Services.RoomServices
                     return null;
                 }
 
+
                 // Update Room
-                room.Name = dto.Name;
-                room.Description = dto.Description;
-                room.ImgUrl = dto.ImgUrl;
-                room.Capacity = dto.Capacity;
-                room.Size = dto.Size;
-                await _roomRepo.UpdateAsync(room);
+
+
+
 
                 #region RoomBeds
+
 
                 var oldBeds = (await _roomBedRepo.FindAsync(rb => rb.RoomId == id)).ToList();
                 var dtoBeds = dto.RoomBeds ?? new List<RoomBedDto>();
@@ -160,7 +154,9 @@ namespace Services.RoomServices
                     }
                 }
 
+
                 #endregion
+
 
                 #region RoomPrices
 
@@ -194,6 +190,7 @@ namespace Services.RoomServices
 
                 #endregion
 
+
                 #region RoomAmenities
 
                 var oldAmenities = (await _roomAmenityRepo.FindAsync(ra => ra.RoomId == id)).ToList();
@@ -218,7 +215,9 @@ namespace Services.RoomServices
                     }
                 }
 
+
                 #endregion
+
 
                 #region RoomSchedules
 
@@ -286,6 +285,25 @@ namespace Services.RoomServices
             if (room == null) return false;
 
             return await _roomRepo.DeleteAsync(room) != null;
+        }
+        public async Task<List<int>> CheckRoomsInHomestayAsync(List<int> roomIds, int homestayId)
+        {
+            if (roomIds == null || !roomIds.Any())
+            {
+                throw new ArgumentException("Room IDs cannot be null or empty.");
+            }
+            if (homestayId <= 0)
+            {
+                throw new ArgumentException("Invalid HomestayId.");
+            }
+            Expression<Func<Room, bool>> predicate = r => roomIds.Contains(r.RoomId);
+            var rooms = await _roomRepo.FindAsync(predicate);
+
+            var invalidRoomIds = roomIds
+                .Where(id => !rooms.Any(r => r.RoomId == id && r.HomestayId == homestayId))
+                .ToList();
+
+            return invalidRoomIds;
         }
     }
 

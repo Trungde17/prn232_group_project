@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Homestays;
-using DataAccess;
+﻿using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Repositories
 {
@@ -58,6 +52,11 @@ namespace Repositories
         {
             await context.Set<T>().AddRangeAsync(entities);
             return await context.SaveChangesAsync() > 0;
+        }
+        public virtual async Task<int> AddRangesAsync(IEnumerable<T> entities)
+        {
+            await context.Set<T>().AddRangeAsync(entities);
+            return await context.SaveChangesAsync();
         }
 
         public virtual async Task<bool> UpdateRangeAsync(IEnumerable<T> entities)

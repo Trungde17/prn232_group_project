@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
 namespace Repositories
 {
@@ -16,8 +11,10 @@ namespace Repositories
         Task<T> GetWithConditionAsync(Expression<Func<T, bool>> predicate);
         Task<IEnumerable<T>> AllAsync();
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
-        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate); 
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
         Task<bool> AddRangeAsync(IEnumerable<T> entities);
+        Task<int> AddRangesAsync(IEnumerable<T> entities);
+
         Task<bool> UpdateRangeAsync(IEnumerable<T> entities);
         Task<bool> DeleteRangeAsync(IEnumerable<T> entities);
         Task SaveChangesAsync();
