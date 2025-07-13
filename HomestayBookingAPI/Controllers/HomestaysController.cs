@@ -47,6 +47,16 @@ namespace HomestayBookingAPI.Controllers
             return Ok(homestay);
         }
 
+        [HttpGet("get-by-id/{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var homestay = await _homestayService.GetHomestayByIdAsync(id);
+            if (homestay == null)
+                return NotFound();
+            var response = _mapper.Map<GetHomestayDetailDTO>(homestay);
+            return Ok(response);
+        }
+
         [HttpGet("{key}/bookings")]
 
         public async Task<IActionResult> GetListBooking([FromODataUri] int key)

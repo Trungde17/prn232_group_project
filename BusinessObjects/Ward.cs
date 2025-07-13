@@ -9,7 +9,7 @@ namespace BusinessObjects
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; } // VD: "Thuận Phước"
+        public string Name { get; set; }
         [Required]
         public int DistrictId { get; set; }
         public District District { get; set; }

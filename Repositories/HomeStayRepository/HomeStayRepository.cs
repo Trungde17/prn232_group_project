@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Bookings;
-using BusinessObjects.Homestays;
+﻿using BusinessObjects.Homestays;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Repositories.HomeStayRepository
 {
@@ -37,10 +31,12 @@ namespace Repositories.HomeStayRepository
                 return await context.Homestays
                     .Include(h => h.HomestayType)
                     .Include(b => b.Feedbacks)
-                    .Include(b => b.HomestayAmenities)
-                    .Include(b => b.HomestayPolicies)
-                    .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.HomestayAmenities).ThenInclude(ha => ha.Amenity)
+                    .Include(b => b.HomestayPolicies).ThenInclude(hp => hp.Policy)
+                    .Include(b => b.HomestayNeighbourhoods).ThenInclude(hn => hn.Neighbourhood)
                     .Include(b => b.Rooms)
+                    .Include(b => b.HomestayImages)
+                    .Include(b => b.Ward).ThenInclude(w => w.District)
                     .FirstOrDefaultAsync(b => b.HomestayId == Id);
             }
             catch (Exception ex)
