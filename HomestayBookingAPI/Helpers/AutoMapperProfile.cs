@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using BusinessObjects.Homestays;
+using DTOs;
 
 namespace HomestayBookingAPI.Helpers
 {
@@ -6,6 +8,8 @@ namespace HomestayBookingAPI.Helpers
     {
         public AutoMapperProfile()
         {
+            CreateMap<Homestay, HomestayListDTO>();
+            CreateMap<Homestay, HomestayDetailDTO>();
         }
     }
 }

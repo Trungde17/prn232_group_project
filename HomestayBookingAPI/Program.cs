@@ -74,6 +74,7 @@ IEdmModel GetEdmModel()
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IGenericRepository<Room>, RoomRepository>();
 builder.Services.AddScoped<IGenericRepository<Homestay>, HomeStayRepository>();
+builder.Services.AddScoped<HomeStayRepository>();
 
 
 
