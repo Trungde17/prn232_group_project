@@ -13,7 +13,6 @@ namespace DTOs
         public string StreetAddress { get; set; }
         public string WardName { get; set; }
         public string DistrictName { get; set; }
-        public string ProvinceName { get; set; }
         public string Description { get; set; }
         public List<string> ImageUrls { get; set; }
         public bool Status { get; set; }
