@@ -1,6 +1,7 @@
 ﻿using BusinessObjects.Enums;
 using BusinessObjects.Homestays;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace BusinessObjects.Bookings
 {
     public class Booking
@@ -13,6 +14,7 @@ namespace BusinessObjects.Bookings
         public ApplicationUser Customer { get; set; }
         [Required]
         public int HomestayId { get; set; }
+        [ForeignKey("HomestayId")]
         public Homestay Homestay { get; set; }
 
         [Required]

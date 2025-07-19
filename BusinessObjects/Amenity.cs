@@ -14,7 +14,7 @@ namespace BusinessObjects
         public string Name { get; set; }
 
         [Required]
-        public AmenityType Type { get; set; }
+        public AmenityType? Type { get; set; }
 
         // Navigation
         public ICollection<HomestayAmenity> HomestayAmenities { get; set; }

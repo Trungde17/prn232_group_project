@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Bookings;
+﻿using BusinessObjects.Bookings;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Repositories.BookingRepository
 {
@@ -19,7 +14,7 @@ namespace Repositories.BookingRepository
         public override async Task<IEnumerable<Booking>> AllAsync()
         {
             return await context.Bookings
-                .Include(b => b.BookingDetails)
+                 .Include(b => b.BookingDetails).ThenInclude(bd => bd.Room)
                 .Include(b => b.Homestay)
                 .Include(b => b.Customer)
                 .ToListAsync();
@@ -31,9 +26,10 @@ namespace Repositories.BookingRepository
             {
                 int Id = (int)id;
                 return await context.Bookings
-                    .Include(b => b.BookingDetails)
+                    .Include(b => b.BookingDetails).ThenInclude(bd=>bd.Room)
                     .Include(b => b.Homestay)
                     .Include(b => b.Customer)
+                    
                     .FirstOrDefaultAsync(b => b.BookingId == Id);
             }
             catch (Exception ex)
@@ -43,14 +39,14 @@ namespace Repositories.BookingRepository
         }
         public virtual async Task<IEnumerable<Booking>> FindAsync(Expression<Func<Booking, bool>> predicate)
         {
-            return await context.Bookings.Include(b => b.BookingDetails)
+            return await context.Bookings.Include(b => b.BookingDetails).ThenInclude(bd => bd.Room)
                     .Include(b => b.Homestay)
                     .Include(b => b.Customer).Where(predicate).ToListAsync();
         }
 
         public virtual async Task<Booking> GetWithConditionAsync(Expression<Func<Booking, bool>> predicate)
         {
-            return await context.Bookings.Include(b => b.BookingDetails)
+            return await context.Bookings.Include(b => b.BookingDetails).ThenInclude(bd => bd.Room)
                     .Include(b => b.Homestay)
                     .Include(b => b.Customer).FirstOrDefaultAsync(predicate);
         }

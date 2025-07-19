@@ -1,17 +1,24 @@
-﻿using BusinessObjects.Homestays;
+
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using BusinessObjects.Homestays;
 using DTOs.HomestayDtos;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+
+﻿using DTOs.HomestayDtos;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
-using Repositories;
 using Services.HomestayServices;
 
 
 namespace HomestayBookingAPI.Controllers
 {
-    
+
     public class HomestaysController : ODataController
     {
         private readonly IHomestayService _homestayService;
@@ -43,16 +50,26 @@ namespace HomestayBookingAPI.Controllers
             return Ok(homestay);
         }
 
-        [HttpGet("{key}/bookings")]
 
-        public async Task<IActionResult> GetListBooking([FromODataUri] int key)
+       
+
+
+
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [EnableQuery]
+        [HttpGet] // Absolute route
+        public async Task<IActionResult> MyHomestays()
         {
-            var homestayBooking = await _homestayService.GetHomestayByIdAsync(key);
-            if (homestayBooking == null)
-                return NotFound();
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = "59dcaa38-8f31-4bed-b2db-81d383b933cd";
+            if (userIdClaim == null)
+                return StatusCode(500, "Cannot retrieve user ID");
 
-            return Ok(homestayBooking);
+            //var homestays = await _homestayService.GetHomestayByUserIdAsync(userIdClaim.Value);
+            var homestays = await _homestayService.GetHomestayByUserIdAsync(userIdClaim);
+            return Ok(homestays);
         }
+
         // PUT: odata/Homestays(5)
         [HttpPut("({key})")]
         public async Task<IActionResult> Put([FromRoute] int key, [FromBody] HomestayUpdateDto dto)

@@ -42,36 +42,43 @@ namespace HomestayBookingAPI.Controllers
                 return Unauthorized("Email does not exist.");
             }
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
-            if (result.Succeeded)
+
+            if (!result.Succeeded)
+
             {
                 return Unauthorized("Password is incorrect.");
             }
             var roles = await _userManager.GetRolesAsync(user);
             var userClaims = await _userManager.GetClaimsAsync(user);
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName)
-            };
-            foreach (var role in roles)
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            claims.AddRange(userClaims);
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name, user.UserName)
+                };
+            // Thêm role, claims khác...
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(3),
-                signingCredentials: creds
-            );
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Issuer = _config["Jwt:Issuer"],
+                Audience = _config["Jwt:Audience"],
+                Expires = DateTime.UtcNow.AddHours(3),
+                SigningCredentials = creds
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var accessToken = tokenHandler.WriteToken(token);
 
             return Ok(new
             {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                expiration = token.ValidTo
+                token = accessToken,
+                expiration = token.ValidTo // hoặc DateTime.UtcNow.AddHours(3)
             });
         }
         [HttpPost("register")]

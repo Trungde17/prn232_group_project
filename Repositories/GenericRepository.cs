@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Homestays;
+﻿using BusinessObjects.Homestays;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Repositories
 {
@@ -44,6 +39,8 @@ namespace Repositories
         {
             return await context.Set<T>().FirstOrDefaultAsync(predicate);
         }
+
+
         public virtual async Task<T> GetAsync(dynamic id)
         {
             return await context.FindAsync<T>(id);
@@ -58,6 +55,11 @@ namespace Repositories
         {
             await context.Set<T>().AddRangeAsync(entities);
             return await context.SaveChangesAsync() > 0;
+        }
+        public virtual async Task<int> AddRangesAsync(IEnumerable<T> entities)
+        {
+            await context.Set<T>().AddRangeAsync(entities);
+            return await context.SaveChangesAsync();
         }
 
         public virtual async Task<bool> UpdateRangeAsync(IEnumerable<T> entities)
@@ -80,6 +82,11 @@ namespace Repositories
         public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
         {
             return await context.Set<T>().AnyAsync(predicate);
+        }
+
+        public IQueryable<Homestay> Find(Expression<Func<Homestay, bool>> predicate)
+        {
+            throw new NotImplementedException();
         }
     }
 }
