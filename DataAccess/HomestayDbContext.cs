@@ -18,7 +18,7 @@ namespace DataAccess
         //{
         //    if (!optionsBuilder.IsConfigured)
         //    {
-        //        optionsBuilder.UseSqlServer("Server=(local);Database=BookingHomestayDb;Uid=sa; Pwd=12345; TrustServerCertificate=True;");
+        //        optionsBuilder.UseSqlServer("Server=MSI\\MSSQLSERVER1;Database=BookingHomestayDb;Uid=sa; Pwd=123; TrustServerCertificate=True;");
         //    }
         //}
         // DbSet cho các bảng chính

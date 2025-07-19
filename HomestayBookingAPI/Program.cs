@@ -4,6 +4,7 @@ using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
 using BusinessObjects.Rooms;
 using DataAccess;
+using HomestayBookingAPI;
 using HomestayBookingAPI.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -120,13 +121,13 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
 var app = builder.Build();
-// Tạo scope để gọi dịch vụ DI
+//Tạo scope để gọi dịch vụ DI
 //using (var scope = app.Services.CreateScope())
 //{
 //    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-//    await DbSeeder.SeedRolesAsync(roleManager);  //  Gọi hàm seed
+//    await DbSeeder.SeedRolesAsync(roleManager);//  Gọi hàm seed
 //}
-// Configure the HTTP request pipeline.
+//Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
