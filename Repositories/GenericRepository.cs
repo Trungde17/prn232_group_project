@@ -53,6 +53,11 @@ namespace Repositories
             await context.Set<T>().AddRangeAsync(entities);
             return await context.SaveChangesAsync() > 0;
         }
+        public virtual async Task<int> AddRangesAsync(IEnumerable<T> entities)
+        {
+            await context.Set<T>().AddRangeAsync(entities);
+            return await context.SaveChangesAsync();
+        }
 
         public virtual async Task<bool> UpdateRangeAsync(IEnumerable<T> entities)
         {

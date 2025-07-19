@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Rooms;
+﻿using BusinessObjects.Rooms;
 using DTOs.RoomDtos;
 
 namespace Services.RoomServices
@@ -15,5 +10,6 @@ namespace Services.RoomServices
         Task<IEnumerable<Room>> GetAllRoomsAsync();
         Task<Room> GetRoomByIdAsync(int id);
         Task<bool> DeleteRoomAsync(int id);
+        public Task<List<int>> CheckRoomsInHomestayAsync(List<int> roomIds, int homestayId);
     }
 }

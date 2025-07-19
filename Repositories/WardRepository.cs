@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects;
+﻿using BusinessObjects;
 using DataAccess;
+using Microsoft.EntityFrameworkCore;
 
 namespace Repositories
 {
@@ -12,6 +8,19 @@ namespace Repositories
     {
         public WardRepository(HomestayDbContext context) : base(context)
         {
+        }
+        public override async Task<Ward> GetAsync(dynamic id)
+        {
+            try
+            {
+                int Id = (int)id;
+                return await context.Wards
+                    .FirstOrDefaultAsync(w => w.WardId == Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred while retrieving the booking with ID: {id}", ex);
+            }
         }
     }
 }
