@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using Microsoft.OpenApi.Models;
 using Repositories;
 using Repositories.BookingRepository;
 using Repositories.HomeStayRepository;
@@ -21,6 +22,7 @@ using Services;
 using Services.BookingServices;
 using Services.HomestayServices;
 using Services.RoomServices;
+using Services.StatisticsService;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
@@ -31,7 +33,34 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Add JWT Authentication
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer {your token}'"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Id = "Bearer",
+                    Type = ReferenceType.SecurityScheme
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 //Database
 builder.Services.AddDbContext<HomestayDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -103,6 +132,9 @@ builder.Services.AddScoped<IGenericRepository<Ward>, WardRepository>();
 
 builder.Services.AddScoped<FavoriteHomestayRepository>();
 builder.Services.AddScoped<IFavoriteHomestayService, FavoriteHomestayService>();
+
+// statistics service
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 //dki OData
 IEdmModel GetEdmModel()

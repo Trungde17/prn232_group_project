@@ -1,5 +1,7 @@
 ﻿using BusinessObjects;
 using DTOs;
+using DTOs.UserDtos;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -72,7 +74,8 @@ namespace HomestayBookingAPI.Controllers
             return Ok(new
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),
-                expiration = token.ValidTo
+                expiration = token.ValidTo,
+                role = roles[0]
             });
         }
         [HttpPost("register")]
@@ -284,6 +287,87 @@ namespace HomestayBookingAPI.Controllers
         {
             await _signInManager.SignOutAsync();
             return Ok("Logged out successfully.");
+        }
+
+        [HttpGet("users")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public IActionResult GetUsers([FromQuery] string? email, [FromQuery] string? name)
+        {
+            var query = _userManager.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(email))
+                query = query.Where(u => u.Email.Contains(email));
+
+            if (!string.IsNullOrWhiteSpace(name))
+                query = query.Where(u => u.FirstName.Contains(name) || u.LastName.Contains(name) || u.UserName.Contains(name));
+
+            var users = query.Select(u => new UserDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                UserName = u.UserName,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                PhoneNumber = u.PhoneNumber,
+                LockoutEnabled = u.LockoutEnabled,
+                LockoutEnd = u.LockoutEnd
+            }).ToList();
+
+            return Ok(users);
+        }
+
+        // ... existing code ...
+
+        [HttpPost("ban/{userId}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")] // Restrict to admins
+        public async Task<IActionResult> BanUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            // Check if user has Customer role
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (!userRoles.Contains("Customer"))
+            {
+                return BadRequest("Only users with Customer role can be banned.");
+            }
+
+            var result = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            if (result.Succeeded)
+            {
+                return Ok(new { message = $"Customer {user.Email} has been banned." });
+            }
+            else
+            {
+                return BadRequest("Failed to ban user.");
+            }
+        }
+
+        [HttpPost("unban/{userId}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")] // Restrict to admins
+        public async Task<IActionResult> UnbanUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            // Check if user has Customer role
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (!userRoles.Contains("Customer"))
+            {
+                return BadRequest("Only users with Customer role can be unbanned.");
+            }
+
+            var result = await _userManager.SetLockoutEndDateAsync(user, null);
+            if (result.Succeeded)
+            {
+                return Ok(new { message = $"Customer {user.Email} has been unbanned." });
+            }
+            else
+            {
+                return BadRequest("Failed to unban user.");
+            }
         }
     }
 }
