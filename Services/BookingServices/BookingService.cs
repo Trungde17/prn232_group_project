@@ -181,5 +181,10 @@ namespace Services.BookingServices
             var booking = await _bookingRepo.GetAsync(bookingId);
             return booking;
         }
+
+        public Task<List<Booking>> GetMyBookingAsync(string userId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
