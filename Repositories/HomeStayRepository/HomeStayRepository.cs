@@ -3,6 +3,7 @@ using DataAccess;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
+using DTOs;
 namespace Repositories.HomeStayRepository
 {
     public class HomeStayRepository : GenericRepository<Homestay>
@@ -65,6 +66,33 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.HomestayNeighbourhoods)
                     .Include(b => b.Rooms).FirstOrDefaultAsync(predicate);
         }
+        public async Task<Homestay> GetDetailByIdAsync(int id)
+        {
+            return await context.Homestays
+                .Include(h => h.Ward)
+                    .ThenInclude(w => w.District)
+                .Include(h => h.Owner)
+                .Include(h => h.HomestayImages)
+                .Include(h => h.Rooms)
+                .FirstOrDefaultAsync(h => h.HomestayId == id);
+        }
+        public async Task<List<HomestayListDTO>> SearchWithInfoAsync(Expression<Func<Homestay, bool>> predicate)
+        {
+            return await context.Homestays
+                .Include(h => h.Ward).ThenInclude(w => w.District)
+                .Include(h => h.HomestayImages)
+                .Where(predicate)
+                .Select(h => new HomestayListDTO
+                {
+                    HomestayName = h.Name,
+                    Rules = h.Rules,
+                    FullAddress = h.StreetAddress + ", " + h.Ward.Name + ", " + h.Ward.District.Name,
+                    Status = h.Status,
+                    ThumbnailUrl = h.HomestayImages.Select(i => i.ImageUrl).FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+
 
 
     }
