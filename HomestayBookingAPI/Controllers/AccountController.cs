@@ -1,5 +1,6 @@
 ﻿using BusinessObjects;
 using DTOs;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -139,38 +140,150 @@ namespace HomestayBookingAPI.Controllers
                 return BadRequest("Invalid or expired confirmation link.");
         }
 
+        private static Dictionary<string, string> _resetCodes = new(); // Key: Email, Value: Code
+
         [HttpPost("forgot-password")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-                return Ok("If your email is registered and confirmed, a password reset link has been sent.");
+                return Ok("If your email is registered and confirmed, a reset code has been sent.");
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var encodedToken = WebUtility.UrlEncode(token);
-            var callbackUrl = $"{_config["App:ClientUrl"]}/reset-password?userId={user.Id}&token={encodedToken}";
+            // Tạo mã ngẫu nhiên 6 chữ số
+            var code = new Random().Next(100000, 999999).ToString();
+            _resetCodes[user.Email] = code;
 
-            await _emailSender.SendEmailAsync(user.Email, "Reset Password",
-                $"Reset your password by clicking this link: <a href='{callbackUrl}'>Reset Password</a>");
+            // Gửi email
+            await _emailSender.SendEmailAsync(user.Email, "Reset Code",
+                $"Your password reset code is: <b>{code}</b>. This code will expire in a few minutes.");
 
-            return Ok("If your email is registered and confirmed, a password reset link has been sent.");
+            return Ok("Reset code sent to your email.");
         }
-
-        [HttpPost("reset-password")]
+        [HttpPost("reset-password-with-code")]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        public async Task<IActionResult> ResetPasswordWithCode([FromBody] ResetPasswordWithCodeDto dto)
         {
-            var user = await _userManager.FindByIdAsync(dto.UserId);
+            if (!_resetCodes.TryGetValue(dto.Email, out var storedCode) || storedCode != dto.Code)
+            {
+                return BadRequest("Invalid or expired reset code.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 return NotFound("User not found.");
 
-            var decodedToken = WebUtility.UrlDecode(dto.Token);
-            var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
+
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
+            _resetCodes.Remove(dto.Email); // Xoá mã sau khi sử dụng
             return Ok("Password has been reset successfully.");
+        }
+
+        //[HttpPost("reset-password")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        //{
+        //    var user = await _userManager.FindByIdAsync(dto.UserId);
+        //    if (user == null)
+        //        return NotFound("User not found.");
+
+        //    var decodedToken = WebUtility.UrlDecode(dto.Token);
+        //    var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+        //    if (!result.Succeeded)
+        //        return BadRequest(result.Errors);
+
+        //    return Ok("Password has been reset successfully.");
+        //}
+        [HttpPost("google-login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto dto)
+        {
+            var payload = await VerifyGoogleToken(dto);
+            if (payload == null)
+            {
+                return BadRequest("Invalid Google token");
+            }
+
+            // Kiểm tra người dùng có tồn tại chưa
+            var user = await _userManager.FindByEmailAsync(payload.Email);
+            if (user == null)
+            {
+                user = new ApplicationUser
+                {
+                    UserName = payload.Email,
+                    Email = payload.Email,
+                    FirstName = payload.GivenName,
+                    LastName = payload.FamilyName,
+                    EmailConfirmed = true // Google đã xác minh email
+                };
+                var result = await _userManager.CreateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+
+                // Gán role mặc định
+                await _userManager.AddToRoleAsync(user, "Customer");
+            }
+
+            // Tạo JWT
+            var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(ClaimTypes.Name, user.UserName)
+    };
+
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(3),
+                signingCredentials: creds
+            );
+
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                expiration = token.ValidTo
+            });
+        }
+        //https://developers.google.com/oauthplayground
+        private async Task<GoogleJsonWebSignature.Payload?> VerifyGoogleToken(GoogleLoginDto dto)
+        {
+            try
+            {
+                var settings = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new List<string>() { _config["Authentication:Google:ClientId"] }
+                };
+                var payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken, settings);
+                return payload;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return Ok("Logged out successfully.");
         }
     }
 }

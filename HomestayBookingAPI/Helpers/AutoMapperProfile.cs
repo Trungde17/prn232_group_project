@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
+using DTOs;
 using DTOs.Bookings;
 using DTOs.FavoriteHomestay;
 using DTOs.HomestayDtos;
