@@ -1,8 +1,17 @@
-﻿using AutoMapper;
+
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using BusinessObjects.Homestays;
+using AutoMapper;
 using BusinessObjects;
 using BusinessObjects.Homestays;
 using DTOs.HomestayDtos;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+
+﻿using DTOs.HomestayDtos;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
@@ -59,13 +68,23 @@ namespace HomestayBookingAPI.Controllers
 
         [HttpGet("{key}/bookings")]
 
-        public async Task<IActionResult> GetListBooking([FromODataUri] int key)
-        {
-            var homestayBooking = await _homestayService.GetHomestayByIdAsync(key);
-            if (homestayBooking == null)
-                return NotFound();
+       
 
-            return Ok(homestayBooking);
+
+
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [EnableQuery]
+        [HttpGet] // Absolute route
+        public async Task<IActionResult> MyHomestays()
+        {
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = "59dcaa38-8f31-4bed-b2db-81d383b933cd";
+            if (userIdClaim == null)
+                return StatusCode(500, "Cannot retrieve user ID");
+
+            //var homestays = await _homestayService.GetHomestayByUserIdAsync(userIdClaim.Value);
+            var homestays = await _homestayService.GetHomestayByUserIdAsync(userIdClaim);
+            return Ok(homestays);
         }
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateHomestayDTO dto)

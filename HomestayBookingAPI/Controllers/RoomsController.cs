@@ -48,14 +48,14 @@ namespace HomestayBookingAPI.Controllers
                 return BadRequest("Mismatched Room ID.");
 
             var updated = await _roomService.UpdateRoomAsync(key, dto);
-            return updated == null ? NotFound() : Updated(updated);
+            return updated == null ? NotFound() : Ok(updated);
         }
 
         [HttpDelete("{key}")]
         public async Task<IActionResult> Delete([FromODataUri] int key)
         {
             var deleted = await _roomService.DeleteRoomAsync(key);
-            return deleted ? StatusCode(204) : NotFound();
+            return deleted ? Ok(deleted) : NotFound();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Bookings;
+using BusinessObjects.Enums;
 using BusinessObjects.Rooms;
 using DataAccess;
 using Repositories;
@@ -56,7 +57,14 @@ namespace Services.BookingServices
             }
         }
 
-        public async Task<List<Booking>> GetMyBookingAsync(string userId)
+        public async Task<List<Booking>> GetAllAsync()
+        {
+
+            return (List<Booking>)await _bookingRepo.AllAsync();
+               
+        }
+
+        public async Task<List<Booking>> GetAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))
             {
@@ -120,6 +128,52 @@ namespace Services.BookingServices
             }
 
             return totalAmount;
+        }
+
+
+        public async Task<Booking> GetByIdAsync(int bookingId)
+        {
+            return await _bookingRepo.GetAsync(bookingId);
+        }
+
+        public async Task<Booking> UpdateAsync(int bookingId, Booking updatedBooking)
+        {
+            var existing = await _bookingRepo.GetAsync(bookingId);
+            if (existing == null)
+                return null;
+
+            // Cập nhật các trường cần thiết
+            existing.DateCheckIn = updatedBooking.DateCheckIn;
+            existing.DateCheckOut = updatedBooking.DateCheckOut;
+            existing.CustomerId = updatedBooking.CustomerId;
+            existing.Status = updatedBooking.Status;
+            existing.TotalAmount = updatedBooking.TotalAmount;
+            // ... thêm các property khác nếu cần
+
+            await _bookingRepo.UpdateAsync(existing);
+            return existing;
+        }
+
+        public async Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus status)
+        {
+            var existing = await _bookingRepo.GetAsync(bookingId);
+            if (existing == null)
+                return false;
+
+            existing.Status = status;
+
+            await _bookingRepo.UpdateAsync(existing);
+            return true;
+        }
+
+        public async Task<bool> DeleteAsync(int bookingId)
+        {
+            var booking = await _bookingRepo.GetAsync(bookingId);
+            if (booking == null)
+                return false;
+
+            await _bookingRepo.DeleteAsync(booking);
+            return true;
         }
 
         public async Task<Booking> GetBookingByIdAsync(int bookingId)

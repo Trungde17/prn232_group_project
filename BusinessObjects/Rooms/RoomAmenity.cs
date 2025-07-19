@@ -1,9 +1,12 @@
-﻿namespace BusinessObjects.Rooms
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BusinessObjects.Rooms
 {
     public class RoomAmenity
     {
-
+        [Key] 
         public int RoomId { get; set; }
+        [Key]
 
         public int AmenityId { get; set; }
 

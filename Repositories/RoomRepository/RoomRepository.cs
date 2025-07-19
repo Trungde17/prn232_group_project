@@ -15,9 +15,9 @@ namespace Repositories.RoomRepository
         {
             return await context.Rooms
                 .Include(h => h.Homestay)
-                .Include(b => b.RoomBeds)
-                .Include(b => b.RoomPrices)
-                .Include(b => b.RoomAmenities)
+                .Include(b => b.RoomBeds).ThenInclude(rb => rb.BedType)
+                    .Include(b => b.RoomPrices).ThenInclude(rp => rp.PriceType)
+                    .Include(b => b.RoomAmenities).ThenInclude(ra => ra.Amenity)
                 .Include(b => b.RoomSchedules)
                 .Include(b => b.BookingDetails)
                 .ToListAsync();
@@ -30,12 +30,12 @@ namespace Repositories.RoomRepository
                 int Id = (int)id;
                 return await context.Rooms
                     .Include(h => h.Homestay)
-                    .Include(b => b.RoomBeds)
-                    .Include(b => b.RoomPrices)
-                    .Include(b => b.RoomAmenities)
+                    .Include(b => b.RoomBeds).ThenInclude(rb=>rb.BedType)
+                    .Include(b => b.RoomPrices).ThenInclude(rp=>rp.PriceType)
+                    .Include(b => b.RoomAmenities).ThenInclude(ra=>ra.Amenity)
                     .Include(b => b.RoomSchedules)
                     .Include(b => b.BookingDetails)
-                    .FirstOrDefaultAsync(b => b.HomestayId == Id);
+                    .FirstOrDefaultAsync(b => b.RoomId == Id);
             }
             catch (Exception ex)
             {
@@ -46,9 +46,9 @@ namespace Repositories.RoomRepository
         {
             return await context.Rooms
                     .Include(h => h.Homestay)
-                    .Include(b => b.RoomBeds)
-                    .Include(b => b.RoomPrices)
-                    .Include(b => b.RoomAmenities)
+                    .Include(b => b.RoomBeds).ThenInclude(rb => rb.BedType)
+                    .Include(b => b.RoomPrices).ThenInclude(rp => rp.PriceType)
+                    .Include(b => b.RoomAmenities).ThenInclude(ra => ra.Amenity)
                     .Include(b => b.RoomSchedules)
                     .Include(b => b.BookingDetails).Where(predicate).ToListAsync();
         }
@@ -57,9 +57,9 @@ namespace Repositories.RoomRepository
         {
             return await context.Rooms
                     .Include(h => h.Homestay)
-                    .Include(b => b.RoomBeds)
-                    .Include(b => b.RoomPrices)
-                    .Include(b => b.RoomAmenities)
+                    .Include(b => b.RoomBeds).ThenInclude(rb => rb.BedType)
+                    .Include(b => b.RoomPrices).ThenInclude(rp => rp.PriceType)
+                    .Include(b => b.RoomAmenities).ThenInclude(ra => ra.Amenity)
                     .Include(b => b.RoomSchedules)
                     .Include(b => b.BookingDetails).FirstOrDefaultAsync(predicate);
         }

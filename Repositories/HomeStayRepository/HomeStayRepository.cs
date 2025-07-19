@@ -20,6 +20,7 @@ namespace Repositories.HomeStayRepository
                 .Include(b => b.HomestayAmenities)
                 .Include(b => b.HomestayPolicies)
                 .Include(b => b.HomestayNeighbourhoods)
+                .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                 .Include(b => b.Rooms)
                 .ToListAsync();
         }
@@ -38,6 +39,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.Rooms)
                     .Include(b => b.HomestayImages)
                     .Include(b => b.Ward).ThenInclude(w => w.District)
+                    .Include(b=>b.Bookings).ThenInclude(b=>b.BookingDetails)
                     .FirstOrDefaultAsync(b => b.HomestayId == Id);
             }
             catch (Exception ex)
@@ -45,7 +47,7 @@ namespace Repositories.HomeStayRepository
                 throw new Exception($"An error occurred while retrieving the booking with ID: {id}", ex);
             }
         }
-        public virtual async Task<IEnumerable<Homestay>> FindAsync(Expression<Func<Homestay, bool>> predicate)
+        public override async Task<IEnumerable<Homestay>> FindAsync(Expression<Func<Homestay, bool>> predicate)
         {
             return await context.Homestays
                     .Include(h => h.HomestayType)
@@ -53,10 +55,11 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.HomestayAmenities)
                     .Include(b => b.HomestayPolicies)
                     .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .Include(b => b.Rooms).Where(predicate).ToListAsync();
         }
 
-        public virtual async Task<Homestay> GetWithConditionAsync(Expression<Func<Homestay, bool>> predicate)
+        public override async Task<Homestay> GetWithConditionAsync(Expression<Func<Homestay, bool>> predicate)
         {
             return await context.Homestays
                     .Include(h => h.HomestayType)
@@ -64,6 +67,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.HomestayAmenities)
                     .Include(b => b.HomestayPolicies)
                     .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .Include(b => b.Rooms).FirstOrDefaultAsync(predicate);
         }
         public async Task<Homestay> GetDetailByIdAsync(int id)

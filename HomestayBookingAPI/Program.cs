@@ -151,6 +151,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     })
     .AddOData(opt =>
     opt.AddRouteComponents("odata", GetEdmModel())
