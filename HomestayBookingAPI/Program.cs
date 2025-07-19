@@ -122,15 +122,12 @@ IEdmModel GetEdmModel()
     builder.EntitySet<Amenity>("Amenity");
     builder.EntitySet<PriceType>("PriceType");
     builder.EntitySet<BedType>("BedType");
+    builder.EntitySet<Booking>("OdataBooking");
 
-    // --- ĐÂY LÀ PHẦN SỬ DỤNG CÚ PHÁP ODATA V7 ĐỂ ĐỊNH NGHĨA FUNCTION ---
-    // Để định nghĩa một function/action trên collection trong OData v7:
+   
     // 1. Lấy EntityType của đối tượng (không phải EntitySet)
     var homestayEntityType = builder.EntityType<Homestay>();
 
-    // 2. Gọi .Collection.Function() hoặc .Collection.Action() trên EntityType
-    homestayEntityType.Collection.Function("GetListBooking")
-        .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
     homestayEntityType.Collection.Function("MyHomestays")
         .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
     // --- KẾT THÚC PHẦN CẦN THAY ĐỔI ---

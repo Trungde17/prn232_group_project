@@ -1,17 +1,20 @@
 ﻿using AutoMapper;
 using BusinessObjects.Bookings;
+using BusinessObjects.Enums;
 using DTOs.Bookings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Services.BookingServices;
 using Services.HomestayServices;
 using Services.RoomServices;
 using System.Security.Claims;
 namespace HomestayBookingAPI.Controllers
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class BookingController : ControllerBase
@@ -48,6 +51,9 @@ namespace HomestayBookingAPI.Controllers
             }
 
         }
+
+        
+
 
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] CreateBookingDTO dto)
@@ -95,6 +101,18 @@ namespace HomestayBookingAPI.Controllers
                 return StatusCode(500, "An error occurred while retrieving bookings.");
             }
 
+        }
+        [HttpPut("({key})/status")]
+        public async Task<IActionResult> UpdateStatus([FromODataUri] int key, [FromBody] BookingStatus status)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedBooking = await _bookingService.UpdateBookingStatusAsync(key, status);
+            if (updatedBooking == null)
+                return NotFound();
+
+            return Ok(updatedBooking);
         }
     }
 }

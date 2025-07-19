@@ -1,4 +1,5 @@
-﻿using DataAccess;
+﻿using BusinessObjects.Homestays;
+using DataAccess;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -38,6 +39,8 @@ namespace Repositories
         {
             return await context.Set<T>().FirstOrDefaultAsync(predicate);
         }
+
+
         public virtual async Task<T> GetAsync(dynamic id)
         {
             return await context.FindAsync<T>(id);
@@ -79,6 +82,11 @@ namespace Repositories
         public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
         {
             return await context.Set<T>().AnyAsync(predicate);
+        }
+
+        public IQueryable<Homestay> Find(Expression<Func<Homestay, bool>> predicate)
+        {
+            throw new NotImplementedException();
         }
     }
 }

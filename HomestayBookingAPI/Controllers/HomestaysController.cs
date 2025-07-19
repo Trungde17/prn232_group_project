@@ -51,16 +51,7 @@ namespace HomestayBookingAPI.Controllers
         }
 
 
-        [EnableQuery]
-        [HttpGet("({key})/bookings")]
-        public async Task<IActionResult> GetListBooking([FromODataUri] int key)
-        {
-            var homestayBooking = await _homestayService.GetBookingList(key);
-            if (homestayBooking == null)
-                return NotFound();
-
-            return Ok(homestayBooking);
-        }
+       
 
 
 
