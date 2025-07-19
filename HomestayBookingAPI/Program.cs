@@ -12,12 +12,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using Microsoft.OpenApi.Models;
 using Repositories;
 using Repositories.HomeStayRepository;
 using Repositories.RoomRepository;
 using Services;
 using Services.HomestayServices;
 using Services.RoomServices;
+using Services.StatisticsService;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +29,34 @@ builder.Services.AddControllers().AddOData(opt =>
     opt.AddRouteComponents("odata", GetEdmModel())
         .Select().Filter().Expand().Count().OrderBy().SetMaxTop(100));// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Add JWT Authentication
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer {your token}'"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Id = "Bearer",
+                    Type = ReferenceType.SecurityScheme
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 //Database
 builder.Services.AddDbContext<HomestayDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -79,6 +108,7 @@ builder.Services.AddScoped<IGenericRepository<Homestay>, HomeStayRepository>();
 
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IHomestayService, HomestayService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
