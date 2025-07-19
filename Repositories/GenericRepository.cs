@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects.Homestays;
-using DataAccess;
+﻿using DataAccess;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Repositories
 {
@@ -81,5 +75,6 @@ namespace Repositories
         {
             return await context.Set<T>().AnyAsync(predicate);
         }
+        public IQueryable<T> GetQueryable() => context.Set<T>().AsQueryable();
     }
 }

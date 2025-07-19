@@ -35,6 +35,7 @@ namespace DataAccess
         public DbSet<HomestayNeighbourhood> HomestayNeighbourhoods { get; set; }
 
         public DbSet<HomestayPolicy> HomestayPolicies { get; set; }
+        public DbSet<FavoriteHomestay> FavoriteHomestays { get; set; }
 
         public DbSet<Neighbourhood> Neighbourhoods { get; set; }
 
@@ -74,10 +75,12 @@ namespace DataAccess
             // RoomPrice: composite key
             modelBuilder.Entity<RoomPrice>()
                 .HasKey(rp => new { rp.RoomId, rp.PriceTypeId });
-            //
+
             modelBuilder.Entity<RoomAmenity>()
                 .HasKey(ra => new { ra.RoomId, ra.AmenityId });
-
+            // favorite Homestay composite key
+            modelBuilder.Entity<FavoriteHomestay>()
+                .HasKey(fh => new { fh.HomestayId, fh.UserId });
             //Homestay vs Ward
             modelBuilder.Entity<Homestay>()
                 .HasOne(h => h.Ward)
@@ -142,6 +145,7 @@ namespace DataAccess
                 .HasOne(hi => hi.Homestay)
                 .WithMany(h => h.HomestayImages)
                 .HasForeignKey(hi => hi.HomestayId);
+
             // room vs room schedule
             modelBuilder.Entity<RoomSchedule>()
                 .HasOne(rs => rs.Room)

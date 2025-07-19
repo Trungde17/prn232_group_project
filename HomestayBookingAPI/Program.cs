@@ -52,12 +52,25 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
+    // Thêm sự kiện để debug lỗi xác thực
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+            return Task.CompletedTask;
+        }
+    };
 });
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<HomestayDbContext>()
     .AddDefaultTokenProviders();
 // dki dich vu mail
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+builder.Services.AddScoped<FavoriteHomestayRepository>();
+builder.Services.AddScoped<IFavoriteHomestayService, FavoriteHomestayService>();
+
 //dki OData
 IEdmModel GetEdmModel()
 {
@@ -65,6 +78,7 @@ IEdmModel GetEdmModel()
     builder.EntitySet<Room>("Rooms");
     builder.EntitySet<Homestay>("Homestays");
    
+    builder.EntitySet<FavoriteHomestay>("FavoriteHomestays");
     return builder.GetEdmModel();
 }
 
@@ -82,6 +96,8 @@ builder.Services.AddScoped<IHomestayService, HomestayService>();
 
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
+
 var app = builder.Build();
 // Tạo scope để gọi dịch vụ DI
 using (var scope = app.Services.CreateScope())
@@ -98,7 +114,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
