@@ -113,7 +113,7 @@ builder.Services.AddScoped<IGenericRepository<HomestayPolicy>, HomestayPolicyRep
 builder.Services.AddScoped<IGenericRepository<HomestayNeighbourhood>, HomestayNeighbourhoodRepository>();
 builder.Services.AddScoped<IGenericRepository<HomestayImage>, HomestayImageRepository>();
 builder.Services.AddScoped<IGenericRepository<HomestayType>, HomestayTypeRepository>();
-
+builder.Services.AddScoped<IHomeStayRepository, HomeStayRepository>();
 builder.Services.AddScoped<IHomestayService, HomestayService>();
 //room service
 builder.Services.AddScoped<IGenericRepository<Room>, RoomRepository>();

@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using DTOs;
 namespace Repositories.HomeStayRepository
 {
-    public class HomeStayRepository : GenericRepository<Homestay>
+    public class HomeStayRepository : GenericRepository<Homestay>, IHomeStayRepository
     {
         public HomeStayRepository(HomestayDbContext context) : base(context)
         {
@@ -88,11 +88,11 @@ namespace Repositories.HomeStayRepository
                 .Where(predicate)
                 .Select(h => new HomestayListDTO
                 {
-                    HomestayName = h.Name,
+                    name = h.Name,
                     Rules = h.Rules,
-                    FullAddress = h.StreetAddress + ", " + h.Ward.Name + ", " + h.Ward.District.Name,
+                    streetAddress = h.StreetAddress + ", " + h.Ward.Name + ", " + h.Ward.District.Name,
                     Status = h.Status,
-                    ThumbnailUrl = h.HomestayImages.Select(i => i.ImageUrl).FirstOrDefault()
+                    ImageUrl = h.HomestayImages.Select(i => i.ImageUrl).FirstOrDefault()
                 })
                 .ToListAsync();
         }

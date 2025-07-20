@@ -12,11 +12,11 @@ namespace HomestayBookingAPI.Controllers;
 [ApiController]
 public class GuestController : ControllerBase
 {
-    private readonly HomeStayRepository _homestayRepository;
+    private readonly IHomeStayRepository _homestayRepository;
     private readonly IMapper _mapper;
-
+ 
     public GuestController(
-        HomeStayRepository homestayRepository,
+        IHomeStayRepository homestayRepository,
         IMapper mapper)
     {
         _homestayRepository = homestayRepository;

@@ -47,15 +47,15 @@ namespace HomestayBookingAPI.Helpers
             ));
             CreateMap<CreateFavoriteHomestayDTO, FavoriteHomestay>();
             CreateMap<Homestay, HomestayListDTO>()
-      .ForMember(dest => dest.HomestayName, opt => opt.MapFrom(src => src.Name))
+      .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.Name))
       .ForMember(dest => dest.Rules, opt => opt.MapFrom(src => src.Rules))
-      .ForMember(dest => dest.FullAddress, opt => opt.MapFrom(src =>
+      .ForMember(dest => dest.streetAddress, opt => opt.MapFrom(src =>
           src.StreetAddress + ", " +
           (src.Ward != null ? src.Ward.Name + ", " : "") +
           (src.Ward != null && src.Ward.District != null ? src.Ward.District.Name : "")
       ))
       .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-      .ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom(src =>
+      .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src =>
           src.HomestayImages != null && src.HomestayImages.Any()
               ? src.HomestayImages.First().ImageUrl
               : null

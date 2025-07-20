@@ -13,7 +13,7 @@ using Services.RoomServices;
 
 namespace HomestayBookingAPI.Controllers
 {
-   
+    [Route("odata/bookings")]
     public class OdataBookingController : ODataController
     {
         private readonly IBookingService _bookingService;

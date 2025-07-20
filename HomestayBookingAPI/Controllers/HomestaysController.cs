@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace HomestayBookingAPI.Controllers
 {
-
+    [Route("api/homestays")]
     public class HomestaysController : ODataController
     {
         private readonly IHomestayService _homestayService;
@@ -75,7 +75,7 @@ namespace HomestayBookingAPI.Controllers
 
         //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [EnableQuery]
-        [HttpGet] // Absolute route
+       // [HttpGet] // Absolute route
         public async Task<IActionResult> MyHomestays()
         {
             //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
