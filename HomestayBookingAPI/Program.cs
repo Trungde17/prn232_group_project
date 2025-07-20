@@ -117,8 +117,18 @@ builder.Services.AddControllers()
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
+app.UseCors("AllowAll");
 // Tạo scope để gọi dịch vụ DI
 //using (var scope = app.Services.CreateScope())
 //{

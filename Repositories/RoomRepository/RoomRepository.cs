@@ -35,20 +35,20 @@ namespace Repositories.RoomRepository
                     .Include(b => b.RoomAmenities)
                     .Include(b => b.RoomSchedules)
                     .Include(b => b.BookingDetails)
-                    .FirstOrDefaultAsync(b => b.HomestayId == Id);
+                    .FirstOrDefaultAsync(b => b.RoomId == Id);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new Exception($"An error occurred while retrieving the booking with ID: {id}", ex);
+                throw new Exception($"An error occurred while retrieving the Room with ID: {id}");
             }
         }
         public override async Task<IEnumerable<Room>> FindAsync(Expression<Func<Room, bool>> predicate)
         {
             return await context.Rooms
                     .Include(h => h.Homestay)
-                    .Include(b => b.RoomBeds)
+                    .Include(b => b.RoomBeds).ThenInclude(rb => rb.BedType)
                     .Include(b => b.RoomPrices)
-                    .Include(b => b.RoomAmenities)
+                    .Include(b => b.RoomAmenities).ThenInclude(ra => ra.Amenity)
                     .Include(b => b.RoomSchedules)
                     .Include(b => b.BookingDetails).Where(predicate).ToListAsync();
         }
