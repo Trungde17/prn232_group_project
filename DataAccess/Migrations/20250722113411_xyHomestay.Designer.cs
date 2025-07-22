@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(HomestayDbContext))]
-    [Migration("20250720053308_first")]
-    partial class first
+    [Migration("20250722113411_xyHomestay")]
+    partial class xyHomestay
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -301,6 +301,12 @@ namespace DataAccess.Migrations
 
                     b.Property<int>("HomestayTypeId")
                         .HasColumnType("int");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<string>("Name")
                         .IsRequired()
