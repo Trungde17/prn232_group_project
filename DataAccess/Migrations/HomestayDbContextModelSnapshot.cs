@@ -260,10 +260,12 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("BusinessObjects.Homestays.FavoriteHomestay", b =>
                 {
                     b.Property<int>("HomestayId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
 
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnOrder(0);
 
                     b.Property<DateTime>("FavoritedAt")
                         .HasColumnType("datetime2");
@@ -559,10 +561,12 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("BusinessObjects.Rooms.RoomBed", b =>
                 {
                     b.Property<int>("RoomId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnOrder(0);
 
                     b.Property<int>("BedTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");

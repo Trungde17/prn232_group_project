@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using BusinessObjects.Bookings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Deltas;
@@ -13,29 +15,33 @@ using Services.RoomServices;
 
 namespace HomestayBookingAPI.Controllers
 {
-   
-    public class OdataBookingController : ODataController
+    
+    public class BookingsController : ODataController
     {
         private readonly IBookingService _bookingService;
         private readonly IHomestayService _homestayService;
         private readonly IRoomService _roomService;
         private readonly IMapper _mapper;
 
-        public OdataBookingController(IBookingService bookingService, IMapper mapper, IRoomService roomService, IHomestayService homestayService)
+        public BookingsController(IBookingService bookingService, IMapper mapper, IRoomService roomService, IHomestayService homestayService)
         {
             _bookingService = bookingService;
             _roomService = roomService;
             _homestayService = homestayService;
             _mapper = mapper;
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [EnableQuery]
         [HttpGet]
         public async Task<ActionResult> Get()
         {
             try
             {
-                var bookings = await _bookingService.GetAllAsync();
+                var ownerId = User.FindFirst(ClaimTypes.NameIdentifier).Value.ToString();
+                //var userIdClaim = "05a1acb8-31ac-4735-be45-4c12f089eb1c";
+                if (ownerId == null)
+                    return StatusCode(500, "Cannot retrieve user ID");
+                var bookings = await _bookingService.GetAllByOwnerIdAsync(ownerId);
                 return Ok(bookings ?? new List<Booking>());
             }
             catch (Exception)
@@ -44,17 +50,19 @@ namespace HomestayBookingAPI.Controllers
             }
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         [EnableQuery]
         [HttpGet("({key})")]
         public async Task<IActionResult> Get([FromODataUri] int key)
         {
             var booking = await _bookingService.GetByIdAsync(key);
             if (booking == null)
-                return NotFound();
+                return StatusCode(500);
 
             return Ok(booking);
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
 
         [HttpPut("({key})")]
         public async Task<IActionResult> Put([FromODataUri] int key, [FromBody] Booking updatedBooking)
@@ -68,6 +76,7 @@ namespace HomestayBookingAPI.Controllers
 
             return Ok(booking);
         }
+        [ApiExplorerSettings(IgnoreApi = true)]
 
         [HttpPatch("({key})")]
         public async Task<IActionResult> Patch([FromODataUri] int key, [FromBody] Delta<Booking> patch)
@@ -84,6 +93,7 @@ namespace HomestayBookingAPI.Controllers
 
             return Ok(updated);
         }
+        [ApiExplorerSettings(IgnoreApi = true)]
 
         [HttpDelete("({key})")]
         public async Task<IActionResult> Delete([FromODataUri] int key)

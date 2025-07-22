@@ -1,5 +1,7 @@
-﻿using BusinessObjects.Bookings;
+﻿using System.Collections.Generic;
+using BusinessObjects.Bookings;
 using BusinessObjects.Enums;
+using BusinessObjects.Homestays;
 using BusinessObjects.Rooms;
 using DataAccess;
 using Repositories;
@@ -9,14 +11,16 @@ namespace Services.BookingServices
     public class BookingService : IBookingService
     {
         private readonly IGenericRepository<Booking> _bookingRepo;
+        private readonly IGenericRepository<Homestay> _homestayRepo;
         private readonly IGenericRepository<BookingDetail> _bookingDetailRepo;
         private readonly IGenericRepository<Room> _roomRepo;
         private readonly HomestayDbContext _context;
-        public BookingService(IGenericRepository<Booking> bookingRepo, IGenericRepository<BookingDetail> bookingDetailRepo, IGenericRepository<Room> roomRepo, HomestayDbContext context)
+        public BookingService(IGenericRepository<Booking> bookingRepo, IGenericRepository<BookingDetail> bookingDetailRepo, IGenericRepository<Room> roomRepo, HomestayDbContext context, IGenericRepository<Homestay> homestayRepo)
         {
             _bookingRepo = bookingRepo;
             _bookingDetailRepo = bookingDetailRepo;
             _roomRepo = roomRepo;
+            _homestayRepo = homestayRepo;
             _context = context;
         }
 
@@ -62,6 +66,18 @@ namespace Services.BookingServices
 
             return (List<Booking>)await _bookingRepo.AllAsync();
                
+        }
+
+        public async Task<List<Booking>> GetAllByOwnerIdAsync(string ownerId)
+        {
+           
+            var bookings = await _bookingRepo.FindAsync(h => h.Homestay.OwnerId == ownerId) ?? new List<Booking>();
+
+           
+            
+
+            return (List<Booking>) bookings;
+
         }
 
         public async Task<List<Booking>> GetAsync(string userId)
