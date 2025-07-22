@@ -8,12 +8,12 @@ namespace DTOs
 {
     public class HomestayListDTO
     {
-        public string HomestayName { get; set; }
+        public string name { get; set; }
         
         public string Rules { get; set; }        // Tên loại phòng đầu tiên (nếu có)
-        public string FullAddress { get; set; }
+        public string streetAddress { get; set; }
         public bool Status { get; set; }
-        public string ThumbnailUrl { get; set; } // Nếu có ảnh đại diện
+        public string ImageUrl { get; set; } // Nếu có ảnh đại diện
     }
 }
 

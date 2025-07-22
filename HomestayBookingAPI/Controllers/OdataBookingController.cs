@@ -14,9 +14,9 @@ using Services.HomestayServices;
 using Services.RoomServices;
 
 namespace HomestayBookingAPI.Controllers
-{
-    
+{   
     public class BookingsController : ODataController
+
     {
         private readonly IBookingService _bookingService;
         private readonly IHomestayService _homestayService;
