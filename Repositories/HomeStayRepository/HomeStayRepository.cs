@@ -80,22 +80,40 @@ namespace Repositories.HomeStayRepository
                 .Include(h => h.Rooms)
                 .FirstOrDefaultAsync(h => h.HomestayId == id);
         }
-        public async Task<List<HomestayListDTO>> SearchWithInfoAsync(Expression<Func<Homestay, bool>> predicate)
+        public async Task<List<Homestay>> SearchWithInfoAsync(Expression<Func<Homestay, bool>> predicate, DateTime? checkIn = null, DateTime? checkOut = null)
         {
-            return await context.Homestays
+            var query = context.Homestays
                 .Include(h => h.Ward).ThenInclude(w => w.District)
                 .Include(h => h.HomestayImages)
-                .Where(predicate)
-                .Select(h => new HomestayListDTO
-                {
-                    name = h.Name,
-                    Rules = h.Rules,
-                    streetAddress = h.StreetAddress + ", " + h.Ward.Name + ", " + h.Ward.District.Name,
-                    Status = h.Status,
-                    ImageUrl = h.HomestayImages.Select(i => i.ImageUrl).FirstOrDefault()
-                })
-                .ToListAsync();
+                .Include(h => h.Bookings)
+                .Include(h => h.Rooms)
+                    .ThenInclude(r => r.RoomSchedules)
+                .Where(predicate);
+
+            if (checkIn.HasValue && checkOut.HasValue)
+            {
+                DateTime ci = checkIn.Value;
+                DateTime co = checkOut.Value;
+
+                query = query
+                    .Where(h =>
+                        // Homestay chưa bị đặt trong khoảng thời gian đó
+                        h.Bookings.All(b =>
+                            b.DateCheckOut <= ci || b.DateCheckIn >= co
+                        )
+                        // Có ít nhất một phòng trống
+                        && h.Rooms.Any(r =>
+                            r.RoomSchedules.All(s =>
+                                s.EndDate <= ci || s.StartDate >= co
+                            )
+                        )
+                    );
+            }
+
+            return await query.ToListAsync();
         }
+
+
 
 
 

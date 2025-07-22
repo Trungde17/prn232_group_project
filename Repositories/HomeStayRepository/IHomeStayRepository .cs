@@ -12,6 +12,12 @@ namespace Repositories.HomeStayRepository
     public interface IHomeStayRepository : IGenericRepository<Homestay>
     {
         Task<Homestay> GetDetailByIdAsync(int id);
-        Task<List<HomestayListDTO>> SearchWithInfoAsync(Expression<Func<Homestay, bool>> predicate);
+
+        Task<List<Homestay>> SearchWithInfoAsync(
+            Expression<Func<Homestay, bool>> predicate,
+            DateTime? checkIn = null,
+            DateTime? checkOut = null
+        );
     }
+
 }
