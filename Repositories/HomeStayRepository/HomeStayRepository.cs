@@ -20,6 +20,7 @@ namespace Repositories.HomeStayRepository
                 .Include(b => b.HomestayAmenities)
                 .Include(b => b.HomestayPolicies)
                 .Include(b => b.HomestayNeighbourhoods)
+                .Include(b => b.Ward).ThenInclude(w => w.District)
                 .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                 .Include(b => b.Rooms)
                 .ToListAsync();
@@ -55,6 +56,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.HomestayAmenities)
                     .Include(b => b.HomestayPolicies)
                     .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.Ward).ThenInclude(w => w.District)
                     .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .Include(b => b.Rooms).Where(predicate).ToListAsync();
         }
@@ -67,6 +69,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.HomestayAmenities)
                     .Include(b => b.HomestayPolicies)
                     .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.Ward).ThenInclude(w => w.District)
                     .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .Include(b => b.Rooms).FirstOrDefaultAsync(predicate);
         }
@@ -78,6 +81,7 @@ namespace Repositories.HomeStayRepository
                 .Include(h => h.Owner)
                 .Include(h => h.HomestayImages)
                 .Include(h => h.Rooms)
+                .Include(b => b.Ward).ThenInclude(w => w.District)
                 .FirstOrDefaultAsync(h => h.HomestayId == id);
         }
         public async Task<List<Homestay>> SearchWithInfoAsync(Expression<Func<Homestay, bool>> predicate, DateTime? checkIn = null, DateTime? checkOut = null)

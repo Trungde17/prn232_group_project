@@ -18,7 +18,7 @@ namespace DataAccess
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=db23955.public.databaseasp.net; Database=db23955; User Id=db23955; Password=Kf5_6T+ps8S@; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;");
+                optionsBuilder.UseSqlServer("Server=(local);Database=BookingHomestayDb;Uid=sa; Pwd=123; TrustServerCertificate=True;");
             }
         }
         // DbSet cho các bảng chính

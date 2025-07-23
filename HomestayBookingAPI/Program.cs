@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Options;
 using HomestayBookingAPI;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -216,12 +217,14 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     })
    .AddOData(opt =>
    {
        opt.EnableQueryFeatures();
+       
        opt.AddRouteComponents("odata", GetEdmModel())
           .Select()
           .Filter()

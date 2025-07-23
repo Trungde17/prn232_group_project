@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Repositories.HomeStayRepository;
 using Repositories;          // nơi có ISupportRepository
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
 namespace HomestayBookingAPI.Controllers;
 
@@ -26,23 +27,23 @@ public class GuestController : ControllerBase
     /// <summary>
     /// [2] Tìm kiếm homestay theo tên / địa chỉ / phường
     /// </summary>
- [HttpGet("homestays/search")]
-public async Task<IActionResult> SearchHomestays([FromQuery] HomestaySearchDTO search)
-{
-    Expression<Func<Homestay, bool>> predicate = h =>
-        (string.IsNullOrEmpty(search.Name) || h.Name.Contains(search.Name)) &&
-        (string.IsNullOrEmpty(search.Address) || h.StreetAddress.Contains(search.Address)) &&
-        (string.IsNullOrEmpty(search.Ward) || h.Ward.Name.Contains(search.Ward)) &&
-        (string.IsNullOrEmpty(search.District) || h.Ward.District.Name.Contains(search.District));
+     [HttpGet("homestays/search")]
+    public async Task<IActionResult> SearchHomestays([FromQuery] HomestaySearchDTO search)
+    {
+            Expression<Func<Homestay, bool>> predicate = h =>
+            (string.IsNullOrEmpty(search.Name) || EF.Functions.Like(h.Name.ToLower(), "%" + search.Name.ToLower() + "%")) &&
+            (string.IsNullOrEmpty(search.Address) || EF.Functions.Like(h.StreetAddress.ToLower(), "%" + search.Address.ToLower() + "%")) &&
+            (string.IsNullOrEmpty(search.Ward) || EF.Functions.Like(h.Ward.Name.ToLower(), "%" + search.Ward.ToLower() + "%")) &&
+            (string.IsNullOrEmpty(search.District) || EF.Functions.Like(h.Ward.District.Name.ToLower(), "%" + search.District.ToLower() + "%"));
 
-        // Lọc theo ngày nếu có CheckIn và CheckOut
-        var homestays = await _homestayRepository.SearchWithInfoAsync(predicate, search.CheckIn, search.CheckOut);
+            // Lọc theo ngày nếu có CheckIn và CheckOut
+            var homestays = await _homestayRepository.SearchWithInfoAsync(predicate, search.CheckIn, search.CheckOut);
 
 
-        // Ánh xạ sang DTO
-        var result = _mapper.Map<List<HomestayListDTO>>(homestays);
-        return Ok(result);
-    }
+            // Ánh xạ sang DTO
+            var result = _mapper.Map<List<HomestayListDTO>>(homestays);
+            return Ok(result);
+     }
 
 
 

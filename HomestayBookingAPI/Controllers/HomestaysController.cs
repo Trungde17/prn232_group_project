@@ -28,7 +28,7 @@ namespace HomestayBookingAPI.Controllers
         }
 
         // GET: odata/Homestays
-        [EnableQuery]
+        [EnableQuery(MaxAnyAllExpressionDepth = 5)]
         [HttpGet("")]
         public async Task<IActionResult> Get()
         {
