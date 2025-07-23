@@ -4,7 +4,6 @@ using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
 using BusinessObjects.Rooms;
 using DataAccess;
-using HomestayBookingAPI;
 using HomestayBookingAPI.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -25,9 +24,11 @@ using Services.RoomServices;
 using Services.StatisticsService;
 using System.Text;
 using System.Text.Json.Serialization;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Options;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -114,7 +115,15 @@ builder.Services.AddScoped<IGenericRepository<HomestayPolicy>, HomestayPolicyRep
 builder.Services.AddScoped<IGenericRepository<HomestayNeighbourhood>, HomestayNeighbourhoodRepository>();
 builder.Services.AddScoped<IGenericRepository<HomestayImage>, HomestayImageRepository>();
 builder.Services.AddScoped<IGenericRepository<HomestayType>, HomestayTypeRepository>();
+
 builder.Services.AddScoped<IHomeStayRepository, HomeStayRepository>();
+
+builder.Services.AddScoped<IGenericRepository<Amenity>, AmenityRepository>();
+builder.Services.AddScoped<IGenericRepository<Ward>, WardRepository>();
+builder.Services.AddScoped<IGenericRepository<Policy>, PolicyRepository>();
+builder.Services.AddScoped<IGenericRepository<Neighbourhood>, NeighbourhoodRepository>();
+builder.Services.AddScoped<IGenericRepository<BedType>, BedTypeRepository>();
+
 builder.Services.AddScoped<IHomestayService, HomestayService>();
 //room service
 builder.Services.AddScoped<IGenericRepository<Room>, RoomRepository>();
@@ -123,13 +132,17 @@ builder.Services.AddScoped<IGenericRepository<RoomSchedule>, RoomScheduleReposit
 builder.Services.AddScoped<IGenericRepository<RoomBed>, RoomBedRepository>();
 builder.Services.AddScoped<IGenericRepository<RoomPrice>, RoomPriceRepository>();
 builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IAmenityService, AmenityService>();
+builder.Services.AddScoped<IPolicyService, PolicyService>();
+builder.Services.AddScoped<INeighbourhoodService, NeighbourhoodService>();
+builder.Services.AddScoped<IBedTypeService, BedTypeService>();
 //booking service
 builder.Services.AddScoped<IGenericRepository<Booking>, BookingRepository>();
 builder.Services.AddScoped<IGenericRepository<BookingDetail>, BookingDetailRepository>();
 
 builder.Services.AddScoped<IBookingService, BookingService>();
 
-builder.Services.AddScoped<IGenericRepository<Ward>, WardRepository>();
+
 
 builder.Services.AddScoped<FavoriteHomestayRepository>();
 
@@ -185,16 +198,17 @@ IEdmModel GetEdmModel()
     builder.EntitySet<Room>("Rooms");
     builder.EntitySet<FavoriteHomestay>("FavoriteHomestays");
 
-
-
-   
-
     // 1. Lấy EntityType của đối tượng (không phải EntitySet)
     var homestayEntityType = builder.EntityType<Homestay>();
 
     homestayEntityType.Collection.Function("MyHomestays")
         .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
     // --- KẾT THÚC PHẦN CẦN THAY ĐỔI ---
+
+    
+    builder.EntitySet<Amenity>("Policy");
+    builder.EntitySet<Neighbourhood>("Neighbourhood");
+    
     return builder.GetEdmModel();
 }
 builder.Services.AddControllers()
@@ -218,9 +232,19 @@ builder.Services.AddControllers()
 
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
-
+// Thêm CORS service
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()      // Cho phép tất cả domain
+              .AllowAnyMethod()      // Cho phép tất cả HTTP methods (GET, POST, PUT, DELETE, etc.)
+              .AllowAnyHeader();     // Cho phép tất cả headers
+    });
+});
 
 var app = builder.Build();
+app.UseCors("AllowAll");
 //Tạo scope để gọi dịch vụ DI
 using (var scope = app.Services.CreateScope())
 {

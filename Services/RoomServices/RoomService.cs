@@ -312,6 +312,10 @@ namespace Services.RoomServices
 
             return invalidRoomIds;
         }
+        public async Task<List<Room>> GetRoomByHomestayIdAsync(int homestayId)
+        {
+            return (await _roomRepo.FindAsync(r => r.HomestayId == homestayId)).ToList();
+        }
     }
 
 }

@@ -16,5 +16,6 @@ namespace Services.BookingServices
         Task<Booking> GetByIdAsync(int bookingId);
         Task<Booking> UpdateAsync(int bookingId, Booking updatedBooking);
         Task<bool> DeleteAsync(int bookingId);
+        public Task<bool> CheckRoomAvailabilityAsync(int roomId, DateTime checkIn, DateTime checkOut);
     }
 }

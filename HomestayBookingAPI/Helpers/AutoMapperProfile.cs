@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
+using BusinessObjects.Rooms;
 using DTOs;
 using DTOs.Bookings;
 using DTOs.FavoriteHomestay;
 using DTOs.HomestayDtos;
+using DTOs.RoomDtos;
 
 namespace HomestayBookingAPI.Helpers
 {
@@ -62,6 +64,7 @@ namespace HomestayBookingAPI.Helpers
       ));
 
 
+
             CreateMap<Homestay, HomestayListDTO>()
               .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.Name))
               .ForMember(dest => dest.Rules, opt => opt.MapFrom(src => src.Rules))
@@ -76,6 +79,27 @@ namespace HomestayBookingAPI.Helpers
                       ? src.HomestayImages.First().ImageUrl
                       : null
               ));
+
+            CreateMap<Homestay, HomestayDetailDTO>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.HomestayId))
+            .ForMember(dest => dest.WardName, opt => opt.MapFrom(src => src.Ward != null ? src.Ward.Name : null))
+            .ForMember(dest => dest.DistrictName, opt => opt.MapFrom(src => src.Ward != null && src.Ward.District != null ? src.Ward.District.Name : null))
+            .ForMember(dest => dest.HostPhone, opt => opt.MapFrom(src => src.Owner != null ? src.Owner.PhoneNumber : null))
+            .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src =>
+         src.HomestayImages != null
+             ? src.HomestayImages.Select(img => img.ImageUrl).ToList()
+             : new List<string>()));
+
+
+            CreateMap<Room, GetRoomForBookingResponseDTO>()
+            .ForMember(dest => dest.Amenities, opt => opt.MapFrom(src =>
+                src.RoomAmenities.Select(ra => ra.Amenity.Name).ToList()))
+            .ForMember(dest => dest.RoomBeds, opt => opt.MapFrom(src =>
+                src.RoomBeds.Select(rb => $"{rb.Quantity} {rb.BedType.Name}").ToList()))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
+                src.RoomPrices.FirstOrDefault().AmountPerNight));
+
         }
+
     }
 }
