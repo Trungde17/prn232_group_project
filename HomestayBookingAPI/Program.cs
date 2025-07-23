@@ -28,6 +28,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Options;
+using HomestayBookingAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 

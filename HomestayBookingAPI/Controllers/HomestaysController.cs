@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AutoMapper;
 using BusinessObjects;
 using BusinessObjects.Homestays;
@@ -60,6 +61,7 @@ namespace HomestayBookingAPI.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [EnableQuery]
+        [HttpGet]
         public async Task<IActionResult> MyHomestays()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value.ToString();

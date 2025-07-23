@@ -2,6 +2,8 @@
 using BusinessObjects.Bookings;
 using BusinessObjects.Enums;
 using DTOs.Bookings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
