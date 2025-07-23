@@ -61,7 +61,7 @@ namespace Services.BookingServices
         {
 
             return (List<Booking>)await _bookingRepo.AllAsync();
-               
+
         }
 
         public async Task<List<Booking>> GetAsync(string userId)
@@ -185,6 +185,36 @@ namespace Services.BookingServices
         public Task<List<Booking>> GetMyBookingAsync(string userId)
         {
             throw new NotImplementedException();
+        }
+        public async Task<bool> CheckRoomAvailabilityAsync(int roomId, DateTime checkIn, DateTime checkOut)
+        {
+            if (checkIn >= checkOut)
+            {
+                throw new ArgumentException("Invalid date range.");
+            }
+            // Check if room exists
+            var roomExists = await _roomRepo.GetAsync(roomId);
+            if (roomExists == null)
+            {
+                throw new ArgumentException($"Room with ID {roomId} does not exist.");
+            }
+            var bookings = await _bookingRepo.AllAsync();
+            if (bookings != null)
+            {
+                var bookingDetails = await _bookingDetailRepo.AllAsync();
+                if (bookingDetails != null)
+                {
+                    return !bookings
+                        .Join(bookingDetails,
+                            b => b.BookingId,
+                            bd => bd.BookingId,
+                            (b, bd) => new { b, bd })
+                        .Any(x => roomId == x.bd.RoomId
+                            && x.b.DateCheckIn < checkOut
+                            && x.b.DateCheckOut > checkIn);
+                }
+            }
+            return true;
         }
     }
 }

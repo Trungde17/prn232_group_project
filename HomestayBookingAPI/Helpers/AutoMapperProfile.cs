@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
+using BusinessObjects.Rooms;
 using DTOs;
 using DTOs.Bookings;
 using DTOs.FavoriteHomestay;
 using DTOs.HomestayDtos;
+using DTOs.RoomDtos;
 
 namespace HomestayBookingAPI.Helpers
 {
@@ -71,6 +73,16 @@ namespace HomestayBookingAPI.Helpers
          src.HomestayImages != null
              ? src.HomestayImages.Select(img => img.ImageUrl).ToList()
              : new List<string>()));
+
+
+            CreateMap<Room, GetRoomForBookingResponseDTO>()
+            .ForMember(dest => dest.Amenities, opt => opt.MapFrom(src =>
+                src.RoomAmenities.Select(ra => ra.Amenity.Name).ToList()))
+            .ForMember(dest => dest.RoomBeds, opt => opt.MapFrom(src =>
+                src.RoomBeds.Select(rb => $"{rb.Quantity} {rb.BedType.Name}").ToList()))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
+                src.RoomPrices.FirstOrDefault().AmountPerNight));
         }
+
     }
 }

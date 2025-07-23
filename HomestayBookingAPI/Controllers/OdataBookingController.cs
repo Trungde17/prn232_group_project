@@ -1,7 +1,5 @@
-﻿using System.Security.Claims;
-using AutoMapper;
+﻿using AutoMapper;
 using BusinessObjects.Bookings;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Deltas;
 using Microsoft.AspNetCore.OData.Formatter;
@@ -13,7 +11,7 @@ using Services.RoomServices;
 
 namespace HomestayBookingAPI.Controllers
 {
-   
+    [Route("odata/bookings")]
     public class OdataBookingController : ODataController
     {
         private readonly IBookingService _bookingService;

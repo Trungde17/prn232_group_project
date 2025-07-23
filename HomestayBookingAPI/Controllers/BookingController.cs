@@ -2,12 +2,9 @@
 using BusinessObjects.Bookings;
 using BusinessObjects.Enums;
 using DTOs.Bookings;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
-using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Services.BookingServices;
 using Services.HomestayServices;
 using Services.RoomServices;
@@ -51,10 +48,6 @@ namespace HomestayBookingAPI.Controllers
             }
 
         }
-
-        
-
-
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] CreateBookingDTO dto)
         {
@@ -63,9 +56,9 @@ namespace HomestayBookingAPI.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized("User ID not found in token.");
+                //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //if (string.IsNullOrEmpty(userId))
+                //    return Unauthorized("User ID not found in token.");
 
                 if (!(await _homestayService.CheckValidHomestay(dto.HomestayId)))
                     return BadRequest($"Invalid HomestayId {dto.HomestayId}. Homestay does not exist.");
@@ -114,5 +107,54 @@ namespace HomestayBookingAPI.Controllers
 
             return Ok(updatedBooking);
         }
+        [HttpPut("payment-confirm/{bookingId}")]
+        public async Task<IActionResult> ConfirmPaymentBooking(int bookingId)
+        {
+            try
+            {
+                var booking = await _bookingService.GetByIdAsync(bookingId);
+                if (booking == null)
+                {
+                    return NotFound(new { message = "Booking not found" });
+                }
+                if (booking.Status == BookingStatus.Cancelled)
+                {
+                    return BadRequest(new { message = "Cannot confirm payment for cancelled booking" });
+                }
+
+                if (booking.Status == BookingStatus.Confirmed || booking.Status == BookingStatus.Completed)
+                {
+                    return BadRequest(new { message = "Booking payment already confirmed" });
+                }
+
+
+                var updatedBooking = await _bookingService.UpdateBookingStatusAsync(bookingId, BookingStatus.Confirmed);
+                if (!updatedBooking)
+                {
+                    return StatusCode(500, new { message = "Failed to update booking status" });
+                }
+                return Ok(new
+                {
+                    bookingId = bookingId,
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "An error occurred while confirming payment",
+                    details = ex.Message
+                });
+            }
+        }
+
     }
 }

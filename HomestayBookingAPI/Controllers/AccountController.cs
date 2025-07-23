@@ -1,8 +1,9 @@
 ﻿using BusinessObjects;
+using BusinessObjects.Enums;
 using DTOs;
 using DTOs.UserDtos;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Google.Apis.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ using Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 namespace HomestayBookingAPI.Controllers
 {
@@ -375,6 +377,123 @@ namespace HomestayBookingAPI.Controllers
             {
                 return BadRequest("Failed to unban user.");
             }
+        }
+
+
+
+        [HttpPost("create-owner")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        public async Task<IActionResult> CreateOwner([FromBody] CreateOwnerRequestDto dto)
+        {
+
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                return BadRequest("Email already exists.");
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName = dto.Email,
+                Email = dto.Email,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                PhoneNumber = dto.PhoneNumber,
+                Address = dto.Address,
+                Gender = dto.Gender ?? GenderType.Other,
+                DateOfBirth = dto.DateOfBirth,
+                //AvatarUrl = dto.AvatarUrl,
+                EmailConfirmed = true,
+                CreatAt = DateTime.UtcNow
+            };
+            var password = GeneratePassword();
+            var result = await _userManager.CreateAsync(user, password);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            var addRoleResult = await _userManager.AddToRoleAsync(user, "Owner");
+            if (!addRoleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user);
+                return BadRequest(addRoleResult.Errors);
+            }
+
+            try
+            {
+                //await _emailSender.SendEmailAsync(user.Email, "Welcome to Homestay Platform",
+                //    $"Hello {user.FirstName} {user.LastName},<br/>" +
+                //    $"Your Owner account has been created successfully.<br/>" +
+                //    $"Email: {user.Email}<br/>" +
+                //    $"You can now log in to manage your homestays.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Email error: {ex}");
+            }
+
+            return Ok(new
+            {
+
+                userId = user.Id,
+
+            });
+        }
+        private string GeneratePassword(int length = 12)
+        {
+            string LowerCase = "abcdefghijklmnopqrstuvwxyz";
+            string UpperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            string Numbers = "0123456789";
+            string Symbols = "!@#$%^&*";
+            if (length < 8)
+                length = 8; // Minimum password length
+
+            var allChars = LowerCase + UpperCase + Numbers + Symbols;
+            var password = new StringBuilder();
+
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                // Ensure at least one character from each category
+                password.Append(GetRandomChar(LowerCase, rng));
+                password.Append(GetRandomChar(UpperCase, rng));
+                password.Append(GetRandomChar(Numbers, rng));
+                password.Append(GetRandomChar(Symbols, rng));
+
+                // Fill the rest with random characters
+                for (int i = 4; i < length; i++)
+                {
+                    password.Append(GetRandomChar(allChars, rng));
+                }
+            }
+
+            // Shuffle the password to avoid predictable patterns
+            return ShuffleString(password.ToString());
+        }
+        private static char GetRandomChar(string chars, RandomNumberGenerator rng)
+        {
+            byte[] randomBytes = new byte[4];
+            rng.GetBytes(randomBytes);
+            int randomValue = Math.Abs(BitConverter.ToInt32(randomBytes, 0));
+            return chars[randomValue % chars.Length];
+        }
+
+        private static string ShuffleString(string input)
+        {
+            char[] array = input.ToCharArray();
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                for (int i = array.Length - 1; i > 0; i--)
+                {
+                    byte[] randomBytes = new byte[4];
+                    rng.GetBytes(randomBytes);
+                    int randomIndex = Math.Abs(BitConverter.ToInt32(randomBytes, 0)) % (i + 1);
+
+                    // Swap elements
+                    (array[i], array[randomIndex]) = (array[randomIndex], array[i]);
+                }
+            }
+            return new string(array);
         }
     }
 }

@@ -1,28 +1,20 @@
-
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using BusinessObjects.Homestays;
 using AutoMapper;
 using BusinessObjects;
 using BusinessObjects.Homestays;
 using DTOs.HomestayDtos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-
-﻿using DTOs.HomestayDtos;
-
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Services.HomestayServices;
-using Microsoft.AspNetCore.Identity;
 
 
 namespace HomestayBookingAPI.Controllers
 {
-
+    [Route("odata/homestays")]
     public class HomestaysController : ODataController
     {
         private readonly IHomestayService _homestayService;
@@ -66,16 +58,9 @@ namespace HomestayBookingAPI.Controllers
             var response = _mapper.Map<GetHomestayDetailDTO>(homestay);
             return Ok(response);
         }
-
         [HttpGet("{key}/bookings")]
-
-       
-
-
-
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [EnableQuery]
-        [HttpGet] // Absolute route
         public async Task<IActionResult> MyHomestays()
         {
             //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
