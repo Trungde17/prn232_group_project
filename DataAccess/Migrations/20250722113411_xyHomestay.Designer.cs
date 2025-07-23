@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(HomestayDbContext))]
-    [Migration("20250618063111_addf")]
-    partial class addf
+    [Migration("20250722113411_xyHomestay")]
+    partial class xyHomestay
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -260,6 +260,26 @@ namespace DataAccess.Migrations
                     b.ToTable("Feedbacks");
                 });
 
+            modelBuilder.Entity("BusinessObjects.Homestays.FavoriteHomestay", b =>
+                {
+                    b.Property<int>("HomestayId")
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnOrder(0);
+
+                    b.Property<DateTime>("FavoritedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("HomestayId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FavoriteHomestays");
+                });
+
             modelBuilder.Entity("BusinessObjects.Homestays.Homestay", b =>
                 {
                     b.Property<int>("HomestayId")
@@ -267,6 +287,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HomestayId"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -278,6 +301,12 @@ namespace DataAccess.Migrations
 
                     b.Property<int>("HomestayTypeId")
                         .HasColumnType("int");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -308,6 +337,8 @@ namespace DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("HomestayId");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("HomestayTypeId");
 
@@ -539,10 +570,12 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("BusinessObjects.Rooms.RoomBed", b =>
                 {
                     b.Property<int>("RoomId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnOrder(0);
 
                     b.Property<int>("BedTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -812,8 +845,31 @@ namespace DataAccess.Migrations
                     b.Navigation("Homestay");
                 });
 
+            modelBuilder.Entity("BusinessObjects.Homestays.FavoriteHomestay", b =>
+                {
+                    b.HasOne("BusinessObjects.Homestays.Homestay", "Homestay")
+                        .WithMany()
+                        .HasForeignKey("HomestayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Homestay");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BusinessObjects.Homestays.Homestay", b =>
                 {
+                    b.HasOne("BusinessObjects.ApplicationUser", null)
+                        .WithMany("FavoriteHomestays")
+                        .HasForeignKey("ApplicationUserId");
+
                     b.HasOne("BusinessObjects.Homestays.HomestayType", "HomestayType")
                         .WithMany("Homestays")
                         .HasForeignKey("HomestayTypeId")
@@ -1058,6 +1114,8 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("BusinessObjects.ApplicationUser", b =>
                 {
                     b.Navigation("Bookings");
+
+                    b.Navigation("FavoriteHomestays");
 
                     b.Navigation("Feedbacks");
 

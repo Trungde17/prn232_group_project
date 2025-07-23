@@ -27,6 +27,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -93,13 +94,13 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
-})
-// 👇 Thêm Google Authentication
-.AddGoogle(googleOptions =>
-{
-    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 });
+//// 👇 Thêm Google Authentication
+//.AddGoogle(googleOptions =>
+//{
+//    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+//    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+//});
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<HomestayDbContext>()
@@ -113,7 +114,7 @@ builder.Services.AddScoped<IGenericRepository<HomestayPolicy>, HomestayPolicyRep
 builder.Services.AddScoped<IGenericRepository<HomestayNeighbourhood>, HomestayNeighbourhoodRepository>();
 builder.Services.AddScoped<IGenericRepository<HomestayImage>, HomestayImageRepository>();
 builder.Services.AddScoped<IGenericRepository<HomestayType>, HomestayTypeRepository>();
-
+builder.Services.AddScoped<IHomeStayRepository, HomeStayRepository>();
 builder.Services.AddScoped<IHomestayService, HomestayService>();
 //room service
 builder.Services.AddScoped<IGenericRepository<Room>, RoomRepository>();
@@ -131,19 +132,69 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IGenericRepository<Ward>, WardRepository>();
 
 builder.Services.AddScoped<FavoriteHomestayRepository>();
+
+
+builder.Services.AddScoped<IGenericRepository<Amenity>, AmenityRepository>();
+
+
+builder.Services.AddScoped<IGenericRepository<PriceType>, PriceTypeRepository>();
+
+builder.Services.AddScoped<IGenericRepository<BedType>, BedTypeRepository>();
+
+
+builder.Services.AddScoped<IBedTypeService, BedTypeService>();
+
+builder.Services.AddScoped<IPriceTypeService, PriceTypeService>();
+builder.Services.AddScoped<IAmenityService, AmenityService>();
+
+
+
 builder.Services.AddScoped<IFavoriteHomestayService, FavoriteHomestayService>();
 
 // statistics service
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000);
+    options.ListenAnyIP(7220, listenOptions =>
+    {
+        listenOptions.UseHttps(); // nếu dùng HTTPS
+    });
+});
+
 
 //dki OData
 IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
     builder.EntitySet<Booking>("Bookings");
+    builder.EntitySet<Amenity>("Amenity");
+    builder.EntitySet<PriceType>("PriceType");
+    builder.EntitySet<BedType>("BedType");
     builder.EntitySet<Homestay>("Homestays");
     builder.EntitySet<Room>("Rooms");
     builder.EntitySet<FavoriteHomestay>("FavoriteHomestays");
+
+
+
+   
+
+    // 1. Lấy EntityType của đối tượng (không phải EntitySet)
+    var homestayEntityType = builder.EntityType<Homestay>();
+
+    homestayEntityType.Collection.Function("MyHomestays")
+        .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
+    // --- KẾT THÚC PHẦN CẦN THAY ĐỔI ---
     return builder.GetEdmModel();
 }
 builder.Services.AddControllers()
@@ -153,9 +204,17 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     })
-    .AddOData(opt =>
-    opt.AddRouteComponents("odata", GetEdmModel())
-        .Select().Filter().Expand().Count().OrderBy().SetMaxTop(100));
+   .AddOData(opt =>
+   {
+       opt.EnableQueryFeatures();
+       opt.AddRouteComponents("odata", GetEdmModel())
+          .Select()
+          .Filter()
+          .Expand()
+          .Count()
+          .OrderBy()
+          .SetMaxTop(100);
+   });
 
 //dki AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
@@ -163,11 +222,11 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 var app = builder.Build();
 //Tạo scope để gọi dịch vụ DI
-//using (var scope = app.Services.CreateScope())
-//{
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-//    await DbSeeder.SeedRolesAsync(roleManager);//  Gọi hàm seed
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await DbSeeder.SeedRolesAsync(roleManager);//  Gọi hàm seed
+}
 //Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

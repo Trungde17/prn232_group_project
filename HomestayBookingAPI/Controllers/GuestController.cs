@@ -12,11 +12,11 @@ namespace HomestayBookingAPI.Controllers;
 [ApiController]
 public class GuestController : ControllerBase
 {
-    private readonly HomeStayRepository _homestayRepository;
+    private readonly IHomeStayRepository _homestayRepository;
     private readonly IMapper _mapper;
-
+ 
     public GuestController(
-        HomeStayRepository homestayRepository,
+        IHomeStayRepository homestayRepository,
         IMapper mapper)
     {
         _homestayRepository = homestayRepository;
@@ -26,17 +26,27 @@ public class GuestController : ControllerBase
     /// <summary>
     /// [2] Tìm kiếm homestay theo tên / địa chỉ / phường
     /// </summary>
-    [HttpGet("homestays/search")]
-    public async Task<IActionResult> SearchHomestays([FromQuery] HomestaySearchDTO search)
-    {
-        Expression<Func<Homestay, bool>> predicate = h =>
-            (string.IsNullOrEmpty(search.Name) || h.Name.Contains(search.Name)) &&
-            (string.IsNullOrEmpty(search.Address) || h.StreetAddress.Contains(search.Address));
+ [HttpGet("homestays/search")]
+public async Task<IActionResult> SearchHomestays([FromQuery] HomestaySearchDTO search)
+{
+    Expression<Func<Homestay, bool>> predicate = h =>
+        (string.IsNullOrEmpty(search.Name) || h.Name.Contains(search.Name)) &&
+        (string.IsNullOrEmpty(search.Address) || h.StreetAddress.Contains(search.Address)) &&
+        (string.IsNullOrEmpty(search.Ward) || h.Ward.Name.Contains(search.Ward)) &&
+        (string.IsNullOrEmpty(search.District) || h.Ward.District.Name.Contains(search.District));
 
-        var homestays = await _homestayRepository.SearchWithInfoAsync(predicate);
+        // Lọc theo ngày nếu có CheckIn và CheckOut
+        var homestays = await _homestayRepository.SearchWithInfoAsync(predicate, search.CheckIn, search.CheckOut);
+
+
+        // Ánh xạ sang DTO
         var result = _mapper.Map<List<HomestayListDTO>>(homestays);
         return Ok(result);
     }
+
+
+
+
 
 
     /// <summary>

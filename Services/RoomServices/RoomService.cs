@@ -118,7 +118,14 @@ namespace Services.RoomServices
 
                 // Update Room
 
+                // Update Room
+                room.Name = dto.Name;
+                room.Description = dto.Description;
+                room.ImgUrl = dto.ImgUrl;
+                room.Capacity = dto.Capacity;
+                room.Size = dto.Size;
 
+                await _roomRepo.UpdateAsync(room);
 
 
                 #region RoomBeds

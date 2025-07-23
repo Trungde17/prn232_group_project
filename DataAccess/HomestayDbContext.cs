@@ -13,14 +13,14 @@ namespace DataAccess
         : base(options)
         {
         }
-        //public HomestayDbContext() { }
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-        //        optionsBuilder.UseSqlServer("Server=MSI\\MSSQLSERVER1;Database=BookingHomestayDb;Uid=sa; Pwd=123; TrustServerCertificate=True;");
-        //    }
-        //}
+        public HomestayDbContext() { }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Server=db23955.public.databaseasp.net; Database=db23955; User Id=db23955; Password=Kf5_6T+ps8S@; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;");
+            }
+        }
         // DbSet cho các bảng chính
 
         public DbSet<Homestay> Homestays { get; set; }

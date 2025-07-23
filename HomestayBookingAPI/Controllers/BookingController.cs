@@ -14,7 +14,7 @@ using Services.RoomServices;
 using System.Security.Claims;
 namespace HomestayBookingAPI.Controllers
 {
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class BookingController : ControllerBase
