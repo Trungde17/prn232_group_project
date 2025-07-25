@@ -2,8 +2,6 @@
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-
-using DTOs;
 namespace Repositories.HomeStayRepository
 {
     public class HomeStayRepository : GenericRepository<Homestay>, IHomeStayRepository
@@ -19,6 +17,7 @@ namespace Repositories.HomeStayRepository
                 .Include(b => b.Feedbacks)
                 .Include(b => b.HomestayAmenities)
                 .Include(b => b.HomestayPolicies)
+                .Include(b => b.HomestayImages)
                 .Include(b => b.HomestayNeighbourhoods)
                 .Include(b => b.Ward).ThenInclude(w => w.District)
                 .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
@@ -40,7 +39,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.Rooms)
                     .Include(b => b.HomestayImages)
                     .Include(b => b.Ward).ThenInclude(w => w.District)
-                    .Include(b=>b.Bookings).ThenInclude(b=>b.BookingDetails)
+                    .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .FirstOrDefaultAsync(b => b.HomestayId == Id);
             }
             catch (Exception ex)
