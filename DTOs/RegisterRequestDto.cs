@@ -12,6 +12,7 @@ namespace DTOs
         public string Email { get; set; }
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
         public string Role { get; set; } = "Customer";
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BusinessObjects;
+﻿using BusinessObjects;
 using DataAccess;
 
 namespace Repositories
@@ -13,5 +8,6 @@ namespace Repositories
         public PolicyRepository(HomestayDbContext context) : base(context)
         {
         }
+
     }
 }

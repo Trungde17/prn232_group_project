@@ -1,5 +1,8 @@
-﻿namespace BusinessObjects.Enums
+﻿using System.Text.Json.Serialization;
+
+namespace BusinessObjects.Enums
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum BookingStatus
     {
         Pending = 0,      // Đang chờ xác nhận

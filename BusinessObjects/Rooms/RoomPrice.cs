@@ -5,9 +5,10 @@ namespace BusinessObjects.Rooms
     public class RoomPrice
     {
 
+        [Key]
         public int RoomId { get; set; }
 
-
+        [Key]
         public int PriceTypeId { get; set; }
 
         [Required]

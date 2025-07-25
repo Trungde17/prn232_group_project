@@ -44,5 +44,15 @@ namespace BusinessObjects
         public ICollection<Homestay> Homestays { get; set; }
         public ICollection<Feedback> Feedbacks { get; set; }
         public ICollection<Booking> Bookings { get; set; }
+        public ICollection<Homestay> FavoriteHomestays { get; set; }
     }
 }
+/*
+ * customer 1:
+   - gmail: hungtran0508@gmail.com
+   - mk: Hungtran01@
+ * owner 1:
+    - gmail: trungnguyenowner01@gmail.com
+    - mk: Trungnguyen01@
+ 
+ */
