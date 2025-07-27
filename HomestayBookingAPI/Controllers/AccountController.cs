@@ -415,13 +415,6 @@ namespace HomestayBookingAPI.Controllers
             if (user == null)
                 return NotFound("User not found.");
 
-            // Check if user has Customer role
-            var userRoles = await _userManager.GetRolesAsync(user);
-            if (!userRoles.Contains("Customer"))
-            {
-                return BadRequest("Only users with Customer role can be unbanned.");
-            }
-
             var result = await _userManager.SetLockoutEndDateAsync(user, null);
             if (result.Succeeded)
             {
