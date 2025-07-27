@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Services;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
@@ -306,7 +308,7 @@ namespace HomestayBookingAPI.Controllers
 
         [HttpGet("users")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult GetUsers([FromQuery] string? email, [FromQuery] string? name)
+        public async Task<IActionResult> GetUsers([FromQuery] string? email, [FromQuery] string? name)
         {
             var query = _userManager.Users.AsQueryable();
 
@@ -316,17 +318,27 @@ namespace HomestayBookingAPI.Controllers
             if (!string.IsNullOrWhiteSpace(name))
                 query = query.Where(u => u.FirstName.Contains(name) || u.LastName.Contains(name) || u.UserName.Contains(name));
 
-            var users = query.Select(u => new UserDto
+            var userList = await query.ToListAsync();
+
+            var users = new List<UserDto>();
+
+            foreach (var user in userList)
             {
-                Id = u.Id,
-                Email = u.Email,
-                UserName = u.UserName,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                PhoneNumber = u.PhoneNumber,
-                LockoutEnabled = u.LockoutEnabled,
-                LockoutEnd = u.LockoutEnd
-            }).ToList();
+                var roles = await _userManager.GetRolesAsync(user);
+
+                users.Add(new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    UserName = user.UserName,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    PhoneNumber = user.PhoneNumber,
+                    LockoutEnabled = user.LockoutEnabled,
+                    LockoutEnd = user.LockoutEnd,
+                    Role = roles?.FirstOrDefault()
+                });
+            }
 
             return Ok(users);
         }
@@ -343,9 +355,9 @@ namespace HomestayBookingAPI.Controllers
 
             // Check if user has Customer role
             var userRoles = await _userManager.GetRolesAsync(user);
-            if (!userRoles.Contains("Customer"))
+            if (userRoles.Contains("Admin"))
             {
-                return BadRequest("Only users with Customer role can be banned.");
+                return BadRequest("Only users withouth admin role can be banned.");
             }
 
             var result = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);

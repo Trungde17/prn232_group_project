@@ -25,12 +25,6 @@ using Services.StatisticsService;
 using System.Text;
 using System.Text.Json.Serialization;
 
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.Extensions.Options;
-using HomestayBookingAPI;
-using System.Text.Json;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -214,10 +208,10 @@ IEdmModel GetEdmModel()
         .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
     // --- KẾT THÚC PHẦN CẦN THAY ĐỔI ---
 
-    
+
     builder.EntitySet<Amenity>("Policy");
     builder.EntitySet<Neighbourhood>("Neighbourhood");
-    
+
     return builder.GetEdmModel();
 }
 builder.Services.AddControllers()
@@ -231,7 +225,7 @@ builder.Services.AddControllers()
    .AddOData(opt =>
    {
        opt.EnableQueryFeatures();
-       
+
        opt.AddRouteComponents("odata", GetEdmModel())
           .Select()
           .Filter()
@@ -257,11 +251,11 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 app.UseCors("AllowAll");
 //Tạo scope để gọi dịch vụ DI
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await DbSeeder.SeedRolesAsync(roleManager);//  Gọi hàm seed
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+//    await DbSeeder.SeedRolesAsync(roleManager);//  Gọi hàm seed
+//}
 //Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
