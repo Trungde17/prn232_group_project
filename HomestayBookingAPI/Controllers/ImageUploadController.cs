@@ -31,5 +31,21 @@ namespace HomestayBookingAPI.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+        [HttpPost("upload-multiple")]
+        public async Task<IActionResult> UploadImages([FromForm] List<IFormFile> files)
+        {
+            if (files == null || !files.Any())
+                return BadRequest("No files provided.");
+
+            try
+            {
+                var imageUrls = await _cloudinaryService.UploadImagesAsync(files);
+                return Ok(new { imageUrls });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 }

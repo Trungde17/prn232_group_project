@@ -155,6 +155,7 @@ builder.Services.AddScoped<IBedTypeService, BedTypeService>();
 
 builder.Services.AddScoped<IPriceTypeService, PriceTypeService>();
 builder.Services.AddScoped<IAmenityService, AmenityService>();
+builder.Services.AddScoped<IWardService, WardService>();
 
 
 
@@ -195,6 +196,7 @@ IEdmModel GetEdmModel()
 
 
     builder.EntitySet<Amenity>("Amenity");
+    builder.EntitySet<Ward>("Wards");
     builder.EntitySet<PriceType>("PriceType");
     builder.EntitySet<BedType>("BedType");
     builder.EntitySet<Homestay>("Homestays");
@@ -206,11 +208,14 @@ IEdmModel GetEdmModel()
 
     homestayEntityType.Collection.Function("MyHomestays")
         .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
-    // --- KẾT THÚC PHẦN CẦN THAY ĐỔI ---
 
+    
 
     builder.EntitySet<Amenity>("Policy");
     builder.EntitySet<Neighbourhood>("Neighbourhood");
+
+
+
 
     return builder.GetEdmModel();
 }

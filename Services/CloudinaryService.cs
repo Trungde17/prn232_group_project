@@ -48,5 +48,29 @@ namespace Services
 
             throw new Exception("Upload failed");
         }
+        public async Task<List<string>> UploadImagesAsync(List<IFormFile> files)
+        {
+            var urls = new List<string>();
+
+            foreach (var file in files)
+            {
+                await using var stream = file.OpenReadStream();
+
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                    Folder = "uploads" // Optional
+                };
+
+                var result = await _cloudinary.UploadAsync(uploadParams);
+
+                if (result.StatusCode == System.Net.HttpStatusCode.OK)
+                    urls.Add(result.SecureUrl.ToString());
+                else
+                    throw new Exception($"Upload failed for file {file.FileName}");
+            }
+
+            return urls;
+        }
     }
 }

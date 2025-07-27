@@ -52,10 +52,11 @@ namespace Repositories.HomeStayRepository
             return await context.Homestays
                     .Include(h => h.HomestayType)
                     .Include(b => b.Feedbacks)
-                    .Include(b => b.HomestayAmenities)
-                    .Include(b => b.HomestayPolicies)
-                    .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.HomestayAmenities).ThenInclude(h=>h.Amenity)
+                    .Include(b => b.HomestayPolicies).ThenInclude(h => h.Policy)
+                    .Include(b => b.HomestayNeighbourhoods).ThenInclude(h => h.Neighbourhood)
                     .Include(b => b.Ward).ThenInclude(w => w.District)
+                    .Include(b => b.HomestayImages)
                     .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .Include(b => b.Rooms).Where(predicate).ToListAsync();
         }

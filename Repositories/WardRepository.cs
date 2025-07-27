@@ -9,6 +9,11 @@ namespace Repositories
         public WardRepository(HomestayDbContext context) : base(context)
         {
         }
+        public override async Task<IEnumerable<Ward>> AllAsync()
+        {
+            return await context.Wards.Include(w=>w.District).ToListAsync();
+                    ;
+        }
         public override async Task<Ward> GetAsync(dynamic id)
         {
             try
