@@ -59,13 +59,13 @@ namespace HomestayBookingAPI.Controllers
             return Ok(response);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [EnableQuery]
-        [HttpGet]
+        [HttpGet] 
         public async Task<IActionResult> MyHomestays()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value.ToString();
-            //var userIdClaim = "05a1acb8-31ac-4735-be45-4c12f089eb1c";
+            //var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value.ToString();
+            var userIdClaim = "05a1acb8-31ac-4735-be45-4c12f089eb1c";
             if (userIdClaim == null)
                 return StatusCode(500, "Cannot retrieve user ID");
 

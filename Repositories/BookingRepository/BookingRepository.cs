@@ -37,14 +37,14 @@ namespace Repositories.BookingRepository
                 throw new Exception($"An error occurred while retrieving the booking with ID: {id}", ex);
             }
         }
-        public virtual async Task<IEnumerable<Booking>> FindAsync(Expression<Func<Booking, bool>> predicate)
+        public override async Task<IEnumerable<Booking>> FindAsync(Expression<Func<Booking, bool>> predicate)
         {
             return await context.Bookings.Include(b => b.BookingDetails).ThenInclude(bd => bd.Room)
-                    .Include(b => b.Homestay)
+                    .Include(b => b.Homestay).Include(b=>b.Homestay)
                     .Include(b => b.Customer).Where(predicate).ToListAsync();
         }
 
-        public virtual async Task<Booking> GetWithConditionAsync(Expression<Func<Booking, bool>> predicate)
+        public override async Task<Booking> GetWithConditionAsync(Expression<Func<Booking, bool>> predicate)
         {
             return await context.Bookings.Include(b => b.BookingDetails).ThenInclude(bd => bd.Room)
                     .Include(b => b.Homestay)

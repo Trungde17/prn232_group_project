@@ -8,13 +8,17 @@ namespace BusinessObjects.Bookings
     {
         [Key]
         public int BookingId { get; set; }
+       
         [Required]
         public string CustomerId { get; set; }
 
+        [ForeignKey(nameof(CustomerId))]
         public ApplicationUser Customer { get; set; }
+
         [Required]
         public int HomestayId { get; set; }
-        [ForeignKey("HomestayId")]
+
+        [ForeignKey(nameof(HomestayId))]
         public Homestay Homestay { get; set; }
 
         [Required]

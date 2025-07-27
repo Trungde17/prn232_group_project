@@ -165,9 +165,13 @@ builder.Services.AddScoped<IAmenityService, AmenityService>();
 
 
 builder.Services.AddScoped<IFavoriteHomestayService, FavoriteHomestayService>();
-
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 // statistics service
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings")
+);
 
 
 builder.Services.AddCors(options =>
@@ -193,6 +197,9 @@ IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
     builder.EntitySet<Booking>("Bookings");
+    
+
+
     builder.EntitySet<Amenity>("Amenity");
     builder.EntitySet<PriceType>("PriceType");
     builder.EntitySet<BedType>("BedType");
