@@ -13,7 +13,7 @@ namespace Repositories
         public override async Task<IEnumerable<Ward>> AllAsync()
         {
             return await context.Wards.Include(w=>w.District).ToListAsync();
-                    ;
+            ;
         }
         public override async Task<Ward> GetAsync(dynamic id)
         {

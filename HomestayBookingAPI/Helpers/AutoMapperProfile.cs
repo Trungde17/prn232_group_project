@@ -112,7 +112,37 @@ namespace HomestayBookingAPI.Helpers
             .ForMember(dest => dest.FavoriteHomestays, opt => opt.Ignore());
 
 
+            CreateMap<CreateHomestayDTO, Homestay>()
+            .ForMember(dest => dest.HomestayAmenities, opt => opt.MapFrom(src =>
+                src.AmenityIds.Select(id => new HomestayAmenity { AmenityId = id })))
+            .ForMember(dest => dest.HomestayImages, opt => opt.MapFrom(src =>
+                src.ImageUrls.Select((url, index) => new HomestayImage
+                {
+                    ImageUrl = url,
+                    SortOrder = index
+                })))
+            .ForMember(dest => dest.HomestayNeighbourhoods, opt => opt.MapFrom(src =>
+                src.NeighbourhoodIds.Select(id => new HomestayNeighbourhood { NeighbourhoodId = id })))
+            .ForMember(dest => dest.HomestayPolicies, opt => opt.MapFrom(src =>
+                src.HomestayPolicies.Select(p => new HomestayPolicy
+                {
+                    PolicyId = p.PolicyId,
+                    IsAllowed = p.IsAllow
+                })))
+            .ForMember(dest => dest.Owner, opt => opt.Ignore())
+            .ForMember(dest => dest.HomestayType, opt => opt.Ignore())
+            .ForMember(dest => dest.Ward, opt => opt.Ignore())
+            .ForMember(dest => dest.Latitude, opt => opt.Ignore())
+            .ForMember(dest => dest.Longitude, opt => opt.Ignore())
+            .ForMember(dest => dest.Feedbacks, opt => opt.Ignore())
+            .ForMember(dest => dest.Rooms, opt => opt.Ignore())
+            .ForMember(dest => dest.Bookings, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+
         }
+
+
 
     }
 }

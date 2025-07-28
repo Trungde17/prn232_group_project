@@ -12,6 +12,8 @@ namespace DTOs.HomestayDtos
         [Required]
         [StringLength(1000)]
         public string Description { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
 
         [Required]
         [StringLength(255)]
@@ -23,6 +25,18 @@ namespace DTOs.HomestayDtos
         public string Rules { get; set; }
         [Required]
         public string OwnerId { get; set; }
+        public List<string> ImageUrls { get; set; }
+        public List<int> NeighbourhoodIds { get; set; }
+        public List<int> AmenityIds { get; set; }
+        public List<HomestayPolicyDto> HomestayPolicies { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+    public class HomestayPolicyDto
+    {
+        public int PolicyId { get; set; }
+        public bool IsAllow
+        {
+            get; set;
+        }
     }
 }

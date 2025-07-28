@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using AutoMapper;
 using BusinessObjects;
 using BusinessObjects.Homestays;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Services.HomestayServices;
+using System.Security.Claims;
 
 
 namespace HomestayBookingAPI.Controllers
@@ -62,7 +62,7 @@ namespace HomestayBookingAPI.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Owner")]
         [EnableQuery]
-        [HttpGet] 
+        [HttpGet]
         public async Task<IActionResult> MyHomestays()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value.ToString();
@@ -74,6 +74,7 @@ namespace HomestayBookingAPI.Controllers
             var homestays = await _homestayService.GetHomestayByUserIdAsync(userIdClaim);
             return Ok(homestays);
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateHomestayDTO dto)
         {
@@ -84,29 +85,9 @@ namespace HomestayBookingAPI.Controllers
 
             try
             {
-                //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                //if (string.IsNullOrEmpty(userId))
-                //{
-                //    return Unauthorized("User ID not found in token.");
-                //}
-
-                //var user = await _userManager.FindByIdAsync(userId);
-                //if (user == null)
-                //{
-                //    return Unauthorized("User not found.");
-                //}
-                //if (userId != dto.OwnerId && !await _userManager.IsInRoleAsync(user, "Admin"))
-                //{
-                //    return Forbid("You are not authorized to create a homestay for this owner.");
-                //}
-
                 var homestay = _mapper.Map<Homestay>(dto);
-
-
                 var createdHomestay = await _homestayService.CreateHomestayAsync(homestay);
-
-                //var homestayResponse = _mapper.Map<HomestayResponseDTO>(createdHomestay);
-                return CreatedAtAction(nameof(Get), new { id = createdHomestay.HomestayId });
+                return Ok(new { homestay = homestay });
             }
             catch (ArgumentException ex)
             {
@@ -130,5 +111,6 @@ namespace HomestayBookingAPI.Controllers
 
             return Ok(updated);
         }
+
     }
 }

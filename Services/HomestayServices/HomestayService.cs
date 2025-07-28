@@ -189,7 +189,7 @@ namespace Services.HomestayServices
                 throw new ArgumentException($"Ward with ID {homestay.WardId} does not exist.", nameof(homestay.WardId));
             }
 
-            _homestayRepo.AddAsync(homestay);
+            await _homestayRepo.AddAsync(homestay);
             return homestay;
         }
     }
