@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessObjects;
 using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
 using BusinessObjects.Rooms;
@@ -98,6 +99,15 @@ namespace HomestayBookingAPI.Helpers
                 src.RoomBeds.Select(rb => $"{rb.Quantity} {rb.BedType.Name}").ToList()))
             .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
                 src.RoomPrices.FirstOrDefault().AmountPerNight));
+
+            CreateMap<CreateOwnerAccountDTO, ApplicationUser>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.CreatAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
+            .ForMember(dest => dest.UpdateAt, opt => opt.Ignore())
+            .ForMember(dest => dest.Homestays, opt => opt.Ignore())
+            .ForMember(dest => dest.Feedbacks, opt => opt.Ignore())
+            .ForMember(dest => dest.Bookings, opt => opt.Ignore())
+            .ForMember(dest => dest.FavoriteHomestays, opt => opt.Ignore());
 
         }
 

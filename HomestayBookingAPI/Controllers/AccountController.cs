@@ -1,4 +1,5 @@
-﻿using BusinessObjects;
+﻿using AutoMapper;
+using BusinessObjects;
 using BusinessObjects.Enums;
 using DTOs;
 using DTOs.UserDtos;
@@ -12,7 +13,6 @@ using Microsoft.IdentityModel.Tokens;
 using Services;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -25,6 +25,7 @@ namespace HomestayBookingAPI.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IMapper _mapper;
 
         private readonly IConfiguration _config;
         private readonly IEmailSender _emailSender;
@@ -32,13 +33,15 @@ namespace HomestayBookingAPI.Controllers
                             SignInManager<ApplicationUser> signInManager,
                             RoleManager<IdentityRole> roleManager,
                             IConfiguration config,
-                            IEmailSender emailSender)
+                            IEmailSender emailSender,
+                            IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _config = config;
             _emailSender = emailSender;
+            _mapper = mapper;
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
@@ -498,6 +501,47 @@ namespace HomestayBookingAPI.Controllers
             });
         }
 
+        [HttpPost("create-owner-account")]
+        public async Task<IActionResult> CreateOwnerAccount([FromBody] CreateOwnerAccountDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var account = _mapper.Map<ApplicationUser>(dto);
+                var password = GeneratePassword();
+                var resultAccount = await _userManager.CreateAsync(account, password);
+                if (!resultAccount.Succeeded)
+                {
+                    return BadRequest(new
+                    {
+                        errors = resultAccount.Errors.Select(e => e.Description)
+                    });
+                }
+
+                // Gán quyền "Owner"
+                var roleResult = await _userManager.AddToRoleAsync(account, "Owner");
+                if (!roleResult.Succeeded)
+                {
+                    // Nếu gán role thất bại, xóa tài khoản đã tạo trước đó
+                    await _userManager.DeleteAsync(account);
+
+                    return BadRequest(new
+                    {
+                        errors = roleResult.Errors.Select(e => e.Description)
+                    });
+                }
+                return Ok(new { userId = account.Id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while creating the account.", error = ex.Message });
+            }
+        }
+
         [HttpPost("confirm-owner-registration")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmOwnerRegistration([FromBody] ConfirmOwnerRegistrationDto dto)
@@ -517,6 +561,37 @@ namespace HomestayBookingAPI.Controllers
 
             _ownerRegistrationCodes.Remove(dto.Email); // Xoá mã sau khi sử dụng
             return Ok("Owner account confirmed successfully. You can now log in.");
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("get-user-info")]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User ID not found in token.");
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return Unauthorized("User ID not found");
+                }
+                return Ok(new
+                {
+                    firstName = user.FirstName,
+                    lastName = user.LastName,
+                    phoneNumber = user.PhoneNumber,
+
+                });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving bookings.");
+            }
         }
 
         private string GeneratePassword(int length = 12)

@@ -58,9 +58,9 @@ namespace HomestayBookingAPI.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                //if (string.IsNullOrEmpty(userId))
-                //    return Unauthorized("User ID not found in token.");
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized("User ID not found in token.");
 
                 if (!(await _homestayService.CheckValidHomestay(dto.HomestayId)))
                     return BadRequest($"Invalid HomestayId {dto.HomestayId}. Homestay does not exist.");
@@ -74,13 +74,17 @@ namespace HomestayBookingAPI.Controllers
                     return BadRequest($"The following RoomIds are unavailable for the selected dates: {string.Join(", ", unavailableRoomIds)}.");
 
                 var booking = _mapper.Map<Booking>(dto);
-                booking.CustomerId = "71184f16-d47d-4aae-9bf3-f94d49ea91f8";
+                booking.CustomerId = userId;
                 booking.TotalAmount = await _bookingService.CalculateTotalAmountAsync(dto.RoomIds, dto.DateCheckIn, dto.DateCheckOut);
                 var result = await _bookingService.CreateBookingAsync(booking, dto.RoomIds);
                 if (result == null)
                     return StatusCode(500, "Failed to create booking.");
                 // Return 201 Created with booking URL
-                return CreatedAtAction(nameof(Get), new { bookingId = result.BookingId });
+                return CreatedAtAction(nameof(Get), new
+                {
+                    bookingId = result.BookingId,
+                    totalAmount = result.TotalAmount,
+                });
 
             }
             catch (ArgumentException ex)

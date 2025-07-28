@@ -8,6 +8,8 @@
         public string Description { get; set; }
         public string StreetAddress { get; set; }
         public string WardName { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
         public string DistrictName { get; set; }
         public List<HomestayPolicyDTO> Policies { get; set; }
         public List<string> Amenities { get; set; }
