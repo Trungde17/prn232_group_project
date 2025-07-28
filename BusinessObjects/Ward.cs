@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.Homestays;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace BusinessObjects
 {
     public class Ward
@@ -12,8 +13,9 @@ namespace BusinessObjects
         public string Name { get; set; }
         [Required]
         public int DistrictId { get; set; }
+        [ForeignKey("DistrictId")]
         public District District { get; set; }
-
+        [InverseProperty("Ward")]
         public ICollection<Homestay> Homestays { get; set; }
     }
 }

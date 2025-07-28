@@ -1,4 +1,5 @@
-﻿    using BusinessObjects.Enums;
+using BusinessObjects.Enums;
+
 using System.ComponentModel.DataAnnotations;
 
 namespace DTOs

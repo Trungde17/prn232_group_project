@@ -33,7 +33,8 @@ namespace HomestayBookingAPI.Controllers
             _homestayService = homestayService;
             _mapper = mapper;
         }
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,Roles ="Owner")]
         [EnableQuery]
         [HttpGet]
         public async Task<ActionResult> Get()
@@ -41,7 +42,7 @@ namespace HomestayBookingAPI.Controllers
             try
             {
                 var ownerId = User.FindFirst(ClaimTypes.NameIdentifier).Value.ToString();
-                //var userIdClaim = "05a1acb8-31ac-4735-be45-4c12f089eb1c";
+                //var ownerId = "05a1acb8-31ac-4735-be45-4c12f089eb1c";
                 if (ownerId == null)
                     return StatusCode(500, "Cannot retrieve user ID");
                 var bookings = await _bookingService.GetAllByOwnerIdAsync(ownerId);

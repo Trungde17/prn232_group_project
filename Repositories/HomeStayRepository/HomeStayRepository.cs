@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 using DTOs;
+
 namespace Repositories.HomeStayRepository
 {
     public class HomeStayRepository : GenericRepository<Homestay>, IHomeStayRepository
@@ -19,6 +20,7 @@ namespace Repositories.HomeStayRepository
                 .Include(b => b.Feedbacks)
                 .Include(b => b.HomestayAmenities)
                 .Include(b => b.HomestayPolicies)
+                .Include(b => b.HomestayImages)
                 .Include(b => b.HomestayNeighbourhoods)
                 .Include(b => b.Ward).ThenInclude(w => w.District)
                 .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
@@ -40,7 +42,7 @@ namespace Repositories.HomeStayRepository
                     .Include(b => b.Rooms)
                     .Include(b => b.HomestayImages)
                     .Include(b => b.Ward).ThenInclude(w => w.District)
-                    .Include(b=>b.Bookings).ThenInclude(b=>b.BookingDetails)
+                    .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .FirstOrDefaultAsync(b => b.HomestayId == Id);
             }
             catch (Exception ex)
@@ -53,10 +55,11 @@ namespace Repositories.HomeStayRepository
             return await context.Homestays
                     .Include(h => h.HomestayType)
                     .Include(b => b.Feedbacks)
-                    .Include(b => b.HomestayAmenities)
-                    .Include(b => b.HomestayPolicies)
-                    .Include(b => b.HomestayNeighbourhoods)
+                    .Include(b => b.HomestayAmenities).ThenInclude(h=>h.Amenity)
+                    .Include(b => b.HomestayPolicies).ThenInclude(h => h.Policy)
+                    .Include(b => b.HomestayNeighbourhoods).ThenInclude(h => h.Neighbourhood)
                     .Include(b => b.Ward).ThenInclude(w => w.District)
+                    .Include(b => b.HomestayImages)
                     .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                     .Include(b => b.Rooms).Where(predicate).ToListAsync();
         }

@@ -59,9 +59,10 @@ namespace HomestayBookingAPI.Controllers
             return Ok(response);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Owner")]
         [EnableQuery]
-        [HttpGet]
+        [HttpGet] 
         public async Task<IActionResult> MyHomestays()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier).Value.ToString();

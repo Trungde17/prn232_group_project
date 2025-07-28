@@ -62,20 +62,6 @@ builder.Services.AddSwaggerGen(c =>
 //Database
 builder.Services.AddDbContext<HomestayDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173") // FE của bạn
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
-});
-
-
 // dki jwt
 builder.Services.AddAuthentication(options =>
 {
@@ -97,7 +83,6 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
-
     options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
@@ -115,27 +100,13 @@ builder.Services.AddAuthentication(options =>
         }
     };
 })
-//.AddGoogle("Google", googleOptions =>
-//{
-//    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-//    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 
-//    options.Events = new JwtBearerEvents
-//    {
-//        OnAuthenticationFailed = context =>
-//        {
-//            Console.WriteLine($"Authentication failed: {context.Exception.Message}");
-//            return Task.CompletedTask;
-//        }
-//    };
-//});
-// 👇 Thêm Google Authentication
 .AddGoogle(googleOptions =>
 {
     googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-});
 
+});
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<HomestayDbContext>()
@@ -194,13 +165,18 @@ builder.Services.AddScoped<IBedTypeService, BedTypeService>();
 builder.Services.AddScoped<IPriceTypeService, PriceTypeService>();
 builder.Services.AddScoped<IAmenityService, AmenityService>();
 
+builder.Services.AddScoped<IWardService, WardService>();
+
 
 
 builder.Services.AddScoped<IFavoriteHomestayService, FavoriteHomestayService>();
-
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 // statistics service
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings")
+);
 
 builder.Services.AddCors(options =>
 {
@@ -219,35 +195,31 @@ builder.WebHost.ConfigureKestrel(options =>
     });
 });
 
+
 // Logging
 builder.Services.AddLogging(config =>
 {
     config.AddConsole();
     config.AddDebug();
 });
+
 //dki OData
 IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
     builder.EntitySet<Booking>("Bookings");
     builder.EntitySet<Amenity>("Amenity");
+    builder.EntitySet<Ward>("Wards");
     builder.EntitySet<PriceType>("PriceType");
     builder.EntitySet<BedType>("BedType");
     builder.EntitySet<Homestay>("Homestays");
     builder.EntitySet<Room>("Rooms");
     builder.EntitySet<FavoriteHomestay>("FavoriteHomestays");
-
-    // 1. Lấy EntityType của đối tượng (không phải EntitySet)
     var homestayEntityType = builder.EntityType<Homestay>();
-
     homestayEntityType.Collection.Function("MyHomestays")
         .ReturnsCollectionFromEntitySet<Homestay>("Homestays");
-    // --- KẾT THÚC PHẦN CẦN THAY ĐỔI ---
-
-
     builder.EntitySet<Amenity>("Policy");
     builder.EntitySet<Neighbourhood>("Neighbourhood");
-
     return builder.GetEdmModel();
 }
 builder.Services.AddControllers()
@@ -300,7 +272,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseCors("AllowFrontend");
+
 
 app.UseAuthentication();
 app.UseAuthorization();

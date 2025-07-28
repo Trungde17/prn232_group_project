@@ -1,3 +1,4 @@
+
 ﻿using AutoMapper;
 using BusinessObjects;
 using BusinessObjects.Enums;
@@ -65,8 +66,7 @@ namespace HomestayBookingAPI.Controllers
                     new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName),
-
+                    new Claim(ClaimTypes.Name, user.LastName +" "+ user.FirstName),
                 };
             foreach (var role in roles)
             {
@@ -442,6 +442,7 @@ namespace HomestayBookingAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> CreateOwner([FromBody] CreateOwnerRequestDto dto)
         {
+
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
             {
@@ -463,6 +464,7 @@ namespace HomestayBookingAPI.Controllers
                 CreatAt = DateTime.UtcNow
             };
             var result = await _userManager.CreateAsync(user, dto.Password);
+
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors);
@@ -474,7 +476,6 @@ namespace HomestayBookingAPI.Controllers
                 await _userManager.DeleteAsync(user);
                 return BadRequest(addRoleResult.Errors);
             }
-
             // Log thông tin URLs ảnh để debug
             if (dto.HomestayImageUrls != null && dto.HomestayImageUrls.Any())
             {
@@ -593,7 +594,6 @@ namespace HomestayBookingAPI.Controllers
                 return StatusCode(500, "An error occurred while retrieving bookings.");
             }
         }
-
         private string GeneratePassword(int length = 12)
         {
             string LowerCase = "abcdefghijklmnopqrstuvwxyz";

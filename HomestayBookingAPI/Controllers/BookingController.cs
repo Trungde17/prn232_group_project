@@ -57,10 +57,10 @@ namespace HomestayBookingAPI.Controllers
             {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
-
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                     return Unauthorized("User ID not found in token.");
+
 
                 if (!(await _homestayService.CheckValidHomestay(dto.HomestayId)))
                     return BadRequest($"Invalid HomestayId {dto.HomestayId}. Homestay does not exist.");
@@ -75,6 +75,7 @@ namespace HomestayBookingAPI.Controllers
 
                 var booking = _mapper.Map<Booking>(dto);
                 booking.CustomerId = userId;
+
                 booking.TotalAmount = await _bookingService.CalculateTotalAmountAsync(dto.RoomIds, dto.DateCheckIn, dto.DateCheckOut);
                 var result = await _bookingService.CreateBookingAsync(booking, dto.RoomIds);
                 if (result == null)

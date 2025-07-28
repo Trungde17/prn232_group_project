@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+
 using BusinessObjects;
+
 using BusinessObjects.Bookings;
 using BusinessObjects.Homestays;
 using BusinessObjects.Rooms;
@@ -108,6 +110,7 @@ namespace HomestayBookingAPI.Helpers
             .ForMember(dest => dest.Feedbacks, opt => opt.Ignore())
             .ForMember(dest => dest.Bookings, opt => opt.Ignore())
             .ForMember(dest => dest.FavoriteHomestays, opt => opt.Ignore());
+
 
         }
 
