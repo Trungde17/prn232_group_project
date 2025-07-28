@@ -62,7 +62,7 @@ namespace HomestayBookingAPI.Controllers
                     new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Name, user.LastName +" "+ user.FirstName),
 
                 };
             foreach (var role in roles)
