@@ -1,6 +1,7 @@
 ﻿using BusinessObjects;
 using BusinessObjects.Enums;
 using DTOs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -38,47 +39,57 @@ namespace HomestayBookingAPI.Controllers
         }
 
         [HttpGet("profile")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Customer")]
         public async Task<IActionResult> GetProfile()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
-                return Unauthorized("User not authenticated.");
+                return Unauthorized(new { message = "User not authenticated." });
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
 
             var roles = await _userManager.GetRolesAsync(user);
 
             return Ok(new
             {
-                id = user.Id,
-                firstName = user.FirstName,
-                lastName = user.LastName,
-                email = user.Email,
-                phoneNumber = user.PhoneNumber,
-                emailConfirmed = user.EmailConfirmed,
-                role = roles.FirstOrDefault()
+                message = "Profile retrieved successfully.",
+                user = new
+                {
+                    id = user.Id,
+                    firstName = user.FirstName,
+                    lastName = user.LastName,
+                    email = user.Email,
+                    phoneNumber = user.PhoneNumber,
+                    emailConfirmed = user.EmailConfirmed,
+                    role = roles.FirstOrDefault(),
+                    address = user.Address,
+                    dateOfBirth = user.DateOfBirth?.ToString("yyyy-MM-dd"),
+                    gender = user.Gender
+                }
             });
         }
 
         [HttpPut("update-profile")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Customer")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserDto dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
-                return Unauthorized("User not authenticated.");
+                return Unauthorized(new { message = "User not authenticated." });
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
 
-            // Cập nhật thông tin user (chỉ sử dụng các field cần thiết)
+            // Cập nhật các trường
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
-            user.PhoneNumber = dto.PhoneNumber ?? string.Empty;
+            user.PhoneNumber = dto.PhoneNumber ?? string.Empty;    
+            user.Address = dto.Address;
+            user.DateOfBirth = dto.DateOfBirth;
+            user.Gender = (GenderType)dto.Gender;
 
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
@@ -91,7 +102,10 @@ namespace HomestayBookingAPI.Controllers
                         firstName = user.FirstName,
                         lastName = user.LastName,
                         email = user.Email,
-                        phoneNumber = user.PhoneNumber
+                        phoneNumber = user.PhoneNumber,
+                        address = user.Address,
+                        dateOfBirth = user.DateOfBirth?.ToString("yyyy-MM-dd"),
+                        gender = user.Gender
                     }
                 });
             }
@@ -101,8 +115,9 @@ namespace HomestayBookingAPI.Controllers
             }
         }
 
+
         [HttpPut("change-password")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Customer")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -132,6 +147,7 @@ namespace HomestayBookingAPI.Controllers
 
         // PUT: api/Users
         [HttpPut]
+
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto request)
         {
             if (!ModelState.IsValid)
@@ -172,8 +188,6 @@ namespace HomestayBookingAPI.Controllers
                     user.Gender,
                     user.DateOfBirth,
                     user.PhoneNumber,
-                    user.Address,
-                    user.AvatarUrl,
                     user.UpdateAt
                 }
             });

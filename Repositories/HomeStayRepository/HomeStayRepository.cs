@@ -22,6 +22,7 @@ namespace Repositories.HomeStayRepository
                 .Include(b => b.HomestayPolicies)
                 .Include(b => b.HomestayImages)
                 .Include(b => b.HomestayNeighbourhoods)
+                .Include(b => b.HomestayImages)
                 .Include(b => b.Ward).ThenInclude(w => w.District)
                 .Include(b => b.Bookings).ThenInclude(b => b.BookingDetails)
                 .Include(b => b.Rooms)

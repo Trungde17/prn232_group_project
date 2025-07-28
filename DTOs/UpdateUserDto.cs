@@ -23,7 +23,7 @@ namespace DTOs
         [Phone]
         [StringLength(20)]
         public string? PhoneNumber { get; set; }
-
+            
         [StringLength(200)]
         public string? Address { get; set; }
 
