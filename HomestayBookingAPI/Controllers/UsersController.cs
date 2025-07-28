@@ -89,7 +89,7 @@ namespace HomestayBookingAPI.Controllers
             user.PhoneNumber = dto.PhoneNumber ?? string.Empty;    
             user.Address = dto.Address;
             user.DateOfBirth = dto.DateOfBirth;
-            user.Gender = user.Gender;
+            user.Gender = (GenderType)dto.Gender;
 
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
