@@ -102,8 +102,8 @@ namespace HomestayBookingAPI.Controllers
             }
 
         }
-        [HttpPut("({key})/status")]
-        public async Task<IActionResult> UpdateStatus([FromODataUri] int key, [FromBody] BookingStatus status)
+        [HttpPut("{key}/status")]
+        public async Task<IActionResult> UpdateStatus([FromRoute] int key, [FromBody] BookingStatus status)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
